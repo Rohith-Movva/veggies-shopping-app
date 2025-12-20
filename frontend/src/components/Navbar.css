@@ -1,0 +1,121 @@
+/* Navbar Container */
+.navbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background-color: #2c3e50;
+  padding: 10px 20px; /* Tighter padding */
+  color: white;
+  position: sticky;
+  top: 0;
+  z-index: 1000;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+}
+
+/* Logo */
+.logo a {
+  text-decoration: none;
+  color: white;
+  font-size: 1.4rem; /* Slightly smaller font */
+  font-weight: bold;
+  display: flex;
+  align-items: center;
+}
+.logo-image { height: 35px; width: auto; margin-right: 10px; }
+
+/* --- SEARCH BAR (Reduced width to 30% to give buttons space) --- */
+.search-container {
+  position: relative;
+  width: 30%; 
+}
+
+.search-bar {
+  display: flex;
+  background: white;
+  border-radius: 20px;
+  padding: 5px 15px;
+  width: 100%;
+}
+.search-bar input { border: none; outline: none; flex: 1; font-size: 15px; }
+.search-bar button { background: none; border: none; cursor: pointer; color: #2c3e50; }
+
+/* --- NAV LINKS --- */
+.nav-links {
+  display: flex;
+  align-items: center;
+  gap: 25px; /* Comfortable gap */
+}
+
+.nav-links a, .dropdown-title {
+  color: white;
+  text-decoration: none;
+  font-size: 15px;
+  transition: color 0.3s;
+  display: flex;       /* Ensures Icon + Text are side-by-side */
+  align-items: center; /* Vertically aligns Icon + Text */
+  gap: 5px;            /* Space between Icon + Text */
+  white-space: nowrap; /* Prevents text breaking into two lines */
+}
+
+.nav-links a:hover { color: #2ecc71; }
+
+/* Dropdown Menu logic */
+.dropdown {
+  position: relative;
+  height: 100%;       /* Ensures the trigger area is tall */
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+}
+
+.dropdown-menu {
+  position: absolute;
+  /* 1. Snap the menu to the exact bottom of the text */
+  top: 100%;          
+  
+  left: 50%;
+  transform: translateX(-50%);
+  
+  /* 2. Create an invisible 'bridge' so the mouse doesn't fall through */
+  padding-top: 10px;  
+  
+  display: none;      /* Hidden by default */
+  flex-direction: column;
+  min-width: 160px;
+  z-index: 2000;      /* Ensure it sits on top of everything */
+}
+
+/* The actual white box containing links */
+/* We wrap the links in this to keep the background cleanly separated from the invisible bridge */
+.dropdown-menu::before {
+  content: "";
+  position: absolute;
+  top: 10px; /* Matches the padding-top above */
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: white;
+  border-radius: 5px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+  z-index: -1; /* Puts the white box BEHIND the text links */
+}
+
+/* Show menu on hover */
+.dropdown:hover .dropdown-menu {
+  display: flex;
+}
+
+.dropdown-menu a {
+  padding: 12px 20px; /* Slightly bigger clickable area */
+  color: #333;
+  width: 100%;
+  box-sizing: border-box;
+  background: transparent; /* Text sits on top of the ::before white box */
+  white-space: nowrap;
+}
+
+.dropdown-menu a:hover {
+  background-color: #f9f9f9; /* Light grey hover inside the menu */
+  color: #27ae60;
+  border-radius: 5px;
+}
