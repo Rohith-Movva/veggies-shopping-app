@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { FaSave, FaclipboardList } from 'react-icons/fa';
+import API from '../api';
 
 const InventoryPage = () => {
   const [products, setProducts] = useState([]);
@@ -22,7 +23,8 @@ const InventoryPage = () => {
 
   const fetchProducts = async () => {
     try {
-      const res = await axios.get('http://localhost:5000/api/products');
+      //const res = await axios.get('http://localhost:5000/api/products');
+      const res = await API.get('/products');
       setProducts(res.data);
       setLoading(false);
     } catch (err) {

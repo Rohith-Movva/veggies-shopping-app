@@ -11,7 +11,10 @@ const app = express();
 
 // Middleware (This allows JSON data to be sent to backend)
 app.use(express.json());
-app.use(cors());
+app.use(cors({
+    origin: '*', 
+    credentials: true
+}));
 
 // Database Connection
 mongoose.connect(process.env.MONGO_URI)

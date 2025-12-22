@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-
+import API from '../api';
 
 const AdminPage = () => {
   const [orders, setOrders] = useState([]);
@@ -14,7 +14,8 @@ const AdminPage = () => {
         const config = {
           headers: { Authorization: `Bearer ${token}` }
         };
-        const res = await axios.get('http://localhost:5000/api/orders', config);
+        //const res = await axios.get('http://localhost:5000/api/orders', config);
+        const res = await API.get('/orders');
         setOrders(res.data);
         setLoading(false);
       } catch (err) {

@@ -4,6 +4,7 @@ import axios from 'axios';
 import { FaSearch, FaUser, FaShoppingCart, FaSignOutAlt, FaLock } from 'react-icons/fa';
 import logo from '../assets/logo.png';
 import './Navbar.css';
+import API from '../api';
 
 const Navbar = ({ user, cartCount, handleLogout }) => {
   const [showCategories, setShowCategories] = useState(false);
@@ -15,7 +16,8 @@ const Navbar = ({ user, cartCount, handleLogout }) => {
   useEffect(() => {
     const fetchProducts = async () => {
       try {
-        const res = await axios.get('http://localhost:5000/api/products');
+        //const res = await axios.get('http://localhost:5000/api/products');
+        const res = await API.get('/products');
         setAllProducts(res.data);
       } catch (err) {
         console.error("Error fetching products:", err);
