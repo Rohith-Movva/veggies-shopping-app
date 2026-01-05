@@ -1,32 +1,31 @@
 import React, { useState } from 'react';
-import axios from 'axios';
 import { useNavigate, Link } from 'react-router-dom';
-import { FaHome } from 'react-icons/fa'; // Import Home Icon
+import { FaHome, FaEye, FaEyeSlash } from 'react-icons/fa'; // Import Eye Icons
 import API from '../api';
 
 const LoginPage = ({ setUser }) => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false); // <--- NEW STATE
   const navigate = useNavigate();
 
   const handleLogin = async (e) => {
     e.preventDefault();
     try {
       //const res = await axios.post('http://localhost:5000/api/auth/login', { email, password });
-      const res = await API.post('/auth/login', { email, password });
-      localStorage.setItem('token', res.data.token);
-      localStorage.setItem('userInfo', JSON.stringify(res.data));
-      setUser(res.data.user); 
-      alert('Login Successful!');
-      navigate('/'); 
+      const { data } = await API.post('/auth/login', { email, password });
+      localStorage.setItem('token', data.token);
+      localStorage.setItem('user', JSON.stringify(data.user));
+      setUser(data.user);
+      //alert('Login Successful!');
+      navigate('/');
     } catch (err) {
-      alert('Invalid Credentials');
+      alert('Invalid Email or Password');
     }
   };
 
   return (
     <div style={styles.container}>
-      {/* 1. HOME BUTTON ADDED HERE */}
       <div style={{ marginBottom: '20px' }}>
         <Link to="/" style={styles.homeLink}>
           <FaHome /> Back to Home
@@ -44,25 +43,35 @@ const LoginPage = ({ setUser }) => {
           onChange={(e) => setEmail(e.target.value)} 
           required 
         />
-        <input 
-          type="password" 
-          placeholder="Password" 
-          style={styles.input} 
-          value={password} 
-          onChange={(e) => setPassword(e.target.value)} 
-          required 
-        />
+        
+        {/* --- PASSWORD FIELD WITH EYE ICON --- */}
+        <div style={styles.passwordWrapper}>
+          <input 
+            type={showPassword ? "text" : "password"} // Switches between text and dots
+            placeholder="Password" 
+            style={styles.input} 
+            value={password} 
+            onChange={(e) => setPassword(e.target.value)} 
+            required 
+          />
+          <span 
+            onClick={() => setShowPassword(!showPassword)} // Toggles the state
+            style={styles.eyeIcon}
+          >
+            {showPassword ? <FaEyeSlash /> : <FaEye />}
+          </span>
+        </div>
+
         <button type="submit" style={styles.button}>Login</button>
       </form>
       
       <p style={{ marginTop: '15px' }}>
-        New here? <Link to="/signup" style={{ color: '#27ae60', fontWeight: 'bold' }}>Sign Up</Link>
+        Don't have an account? <Link to="/signup" style={{ color: '#27ae60', fontWeight: 'bold' }}>Sign Up</Link>
       </p>
     </div>
   );
 };
 
-// Simple Styles
 const styles = {
   container: {
     maxWidth: '400px',
@@ -82,13 +91,28 @@ const styles = {
     fontSize: '14px',
     fontWeight: 'bold'
   },
+  // We need this wrapper to position the icon relative to the input
+  passwordWrapper: {
+    position: 'relative',
+    width: '100%',
+  },
   input: {
     width: '100%',
     padding: '12px',
     margin: '10px 0',
     border: '1px solid #ccc',
     borderRadius: '5px',
-    boxSizing: 'border-box' // Ensures padding doesn't break layout
+    boxSizing: 'border-box'
+  },
+  // Position the eye icon inside the input box on the right
+  eyeIcon: {
+    position: 'absolute',
+    right: '15px',
+    top: '50%',
+    transform: 'translateY(-50%)', // Vertically center perfectly
+    cursor: 'pointer',
+    color: '#7f8c8d',
+    fontSize: '18px'
   },
   button: {
     width: '100%',

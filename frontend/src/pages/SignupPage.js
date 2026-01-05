@@ -15,7 +15,7 @@ const SignupPage = () => {
     try {
       //await axios.post('http://localhost:5000/api/auth/signup', { name, email, password });
       await API.post('/auth/signup', { name, email, password });
-      alert('Signup Successful! Please Login.');
+      //alert('Signup Successful! Please Login.');
       navigate('/login');
     } catch (err) {
       alert('Signup Failed. Try again.');

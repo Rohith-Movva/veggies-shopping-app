@@ -74,7 +74,7 @@ function App() {
       setCart([...cart, { ...product, quantity: qty }]);
     }
     
-    alert("Added to Cart Successfully!");
+    //alert("Added to Cart Successfully!");
   };
 
   const removeFromCart = (productId) => {
