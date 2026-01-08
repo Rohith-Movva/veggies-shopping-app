@@ -63,7 +63,7 @@ const CategoryPage = ({ addToCart }) => {
 
               {/* Price and Button stay at the bottom */}
               <div>
-                <p style={styles.price}>${product.price}</p>
+                <p style={styles.price}>₹{product.price}</p>
                 <Link 
                   to={`/product/${product._id}`}
                   style={styles.detailsButton}

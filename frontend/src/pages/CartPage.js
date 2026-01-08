@@ -94,7 +94,7 @@ const CartPage = ({ user, cart, setCart, removeFromCart, updateQuantity }) => {
               
               <div style={styles.details}>
                 <h3>{item.name}</h3>
-                <p style={{ color: '#777' }}>${item.price} each</p>
+                <p style={{ color: '#777' }}>₹{item.price} each</p>
                 
                 {/* Controls */}
                 <div style={styles.controls}>
@@ -106,7 +106,7 @@ const CartPage = ({ user, cart, setCart, removeFromCart, updateQuantity }) => {
 
               <div style={styles.actions}>
                 <p style={{ fontWeight: 'bold', fontSize: '18px' }}>
-                  ${(item.price * item.quantity).toFixed(2)}
+                  ₹{(item.price * item.quantity).toFixed(2)}
                 </p>
                 <button onClick={() => removeFromCart(item._id)} style={styles.removeBtn}>Remove</button>
               </div>
@@ -151,7 +151,7 @@ const CartPage = ({ user, cart, setCart, removeFromCart, updateQuantity }) => {
           {/* Totals */}
           <div style={styles.totalRow}>
             <span>Total Amount:</span>
-            <span style={{ fontSize: '24px', color: '#2c3e50' }}>${totalAmount}</span>
+            <span style={{ fontSize: '24px', color: '#2c3e50' }}>₹{totalAmount}</span>
           </div>
 
           <button onClick={handlePlaceOrder} style={styles.checkoutBtn}>

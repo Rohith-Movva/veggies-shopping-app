@@ -44,7 +44,7 @@ const ProductDetails = ({ addToCart }) => {
       <div style={styles.details}>
         <h1 style={styles.title}>{product.name}</h1>
         <p style={styles.description}>{product.description}</p>
-        <h2 style={styles.price}>${product.price}</h2>
+        <h2 style={styles.price}>₹{product.price}</h2>
 
         {/* --- DYNAMIC STOCK STATUS MESSAGE --- */}
         <div style={{ margin: '10px 0' }}>

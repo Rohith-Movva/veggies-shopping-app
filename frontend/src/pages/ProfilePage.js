@@ -74,7 +74,7 @@ const ProfilePage = ({ user }) => {
                   {order.items.map((item, idx) => (
                     <div key={idx} style={{ display: 'flex', justifyContent: 'space-between', fontSize: '14px', marginBottom: '5px' }}>
                       <span>{item.name} (x{item.quantity})</span>
-                      <span>${item.price * item.quantity}</span>
+                      <span>₹{item.price * item.quantity}</span>
                     </div>
                   ))}
                 </div>
@@ -95,7 +95,7 @@ const ProfilePage = ({ user }) => {
                   </span>
 
                   <span style={{ fontSize: '18px', fontWeight: 'bold', color: '#2c3e50' }}>
-                    Total: ${order.totalAmount}
+                    Total: ₹{order.totalAmount}
                   </span>
                 </div>
 

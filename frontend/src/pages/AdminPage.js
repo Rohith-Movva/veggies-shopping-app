@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import axios from 'axios';
+// import axios from 'axios'; // You don't need this if you use API
 import API from '../api';
 
 const AdminPage = () => {
@@ -11,11 +11,20 @@ const AdminPage = () => {
     const fetchOrders = async () => {
       try {
         const token = localStorage.getItem('token');
+        
+        // Check if token exists before making request
+        if (!token) {
+             console.error("No token found");
+             return;
+        }
+
         const config = {
           headers: { Authorization: `Bearer ${token}` }
         };
-        //const res = await axios.get('http://localhost:5000/api/orders', config);
-        const res = await API.get('/orders');
+        
+        // FIX: Pass 'config' as the second argument here
+        const res = await API.get('/orders', config);
+        
         setOrders(res.data);
         setLoading(false);
       } catch (err) {
@@ -37,24 +46,21 @@ const AdminPage = () => {
         }
       };
 
+      // FIX: Pass 'config' as the third argument here
+      await API.put(`/orders/${id}/status`, { status: newStatus }, config);
 
-
-      
-      // Send update to backend
-      //await axios.put(`http://localhost:5000/api/orders/${id}/status`, { status: newStatus }, config);
-      await API.put(`/orders/${id}/status`, { status: newStatus });
-
-      // Update UI instantly without reloading
+      // Update UI instantly
       setOrders(orders.map(order => 
         order._id === id ? { ...order, status: newStatus } : order
       ));
       
-      alert(`Order #${id.slice(-6)} status updated to ${newStatus}`);
+      alert(`Order updated to ${newStatus}`);
     } catch (err) {
       console.error("Error updating status:", err);
       alert("Failed to update status");
     }
   };
+
 
   const lowStockItems = orders.flatMap(o => o.items).filter(i => false);
 
@@ -103,7 +109,7 @@ const AdminPage = () => {
                     </div>
                   ))}
                 </td>
-                <td style={styles.td}>${order.totalAmount}</td>
+                <td style={styles.td}>₹{order.totalAmount}</td>
                 <td style={styles.td}>{new Date(order.createdAt).toLocaleDateString()}</td>
                 
                 {/* --- THE STATUS DROPDOWN --- */}
