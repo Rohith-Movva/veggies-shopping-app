@@ -89,7 +89,7 @@ const LandingPage = () => {
 
 
 
-      {/* --- CAROUSEL SECTION --- */}
+{/* --- CAROUSEL SECTION --- */}
       <div style={styles.carouselSection}>
         <h2 style={{ textAlign: 'center', color: '#2c3e50', marginBottom: '40px' }}>
           ✨ Our Premium Selections
@@ -97,12 +97,12 @@ const LandingPage = () => {
         
         <div style={styles.carouselWrapper}>
           
-          {/* UP ARROW (Previously Left) */}
+          {/* UP ARROW (Top Center) */}
           <button onClick={prevSlide} style={styles.topArrowBtn}>
             <FaChevronUp />
           </button>
 
-          {/* THE GRID (Now stacking vertically) */}
+          {/* THE GRID (Horizontal Row of 3) */}
           <div style={styles.productGrid}>
             
             {visibleProducts.length > 0 ? (
@@ -114,15 +114,13 @@ const LandingPage = () => {
                     style={styles.productImage} 
                   />
                   
-                  <div style={{padding: '0 10px'}}>
-                    <h3 style={styles.productTitle}>{product.name}</h3>
-                    <p style={styles.productDesc}>
-                      {product.description.substring(0, 50)}...
-                    </p>
-                    
-                    <div style={styles.productFooter}>
-                      <Link to={`/product/${product._id}`} style={styles.cardBtn}>View</Link>
-                    </div>
+                  <h3 style={styles.productTitle}>{product.name}</h3>
+                  <p style={styles.productDesc}>
+                    {product.description.substring(0, 50)}...
+                  </p>
+                  
+                  <div style={styles.productFooter}>
+                    <Link to={`/product/${product._id}`} style={styles.cardBtn}>View</Link>
                   </div>
                 </div>
               ))
@@ -130,9 +128,17 @@ const LandingPage = () => {
               <p style={{ textAlign: 'center', width: '100%' }}>Loading products...</p>
             )}
 
+            {/* Empty spacers to keep alignment if we have fewer than 3 items on last page */}
+            {visibleProducts.length < 3 && visibleProducts.length > 0 && (
+               <>
+                 <div style={{ flex: 1 }}></div>
+                 {visibleProducts.length === 1 && <div style={{ flex: 1 }}></div>}
+               </>
+            )}
+
           </div>
 
-          {/* DOWN ARROW (Previously Right) */}
+          {/* DOWN ARROW (Bottom Center) */}
           <button onClick={nextSlide} style={styles.bottomArrowBtn}>
             <FaChevronDown />
           </button>
@@ -206,36 +212,35 @@ const styles = {
   },
   carouselWrapper: {
     position: 'relative',
-    padding: '50px 0', // Changed padding to top/bottom for arrows
+    // Large padding top/bottom to make room for the vertical arrows
+    padding: '60px 0', 
     display: 'flex',
-    flexDirection: 'column', // <--- MAKES IT VERTICAL
-    alignItems: 'center',    // Centers items horizontally
-    gap: '20px'
+    flexDirection: 'column', // Stacks the Arrow -> Grid -> Arrow
+    alignItems: 'center'
   },
   productGrid: {
     display: 'flex',
-    flexDirection: 'column', // <--- STACKS CARDS VERTICALLY
+    flexDirection: 'row', // <--- HORIZONTAL ROW OF CARDS
     gap: '20px',
     width: '100%',
-    alignItems: 'center',    // Centers the cards
+    justifyContent: 'center',
   },
   productCard: {
-    width: '100%',           
-    maxWidth: '500px',       // Limits width so they don't look stretched
+    flex: 1,                 // Each card takes equal width (1/3rd)
+    minWidth: '250px',       // Prevent them from getting too squished
     border: '1px solid #eee',
     borderRadius: '10px',
     padding: '15px',
     boxShadow: '0 4px 8px rgba(0,0,0,0.05)',
     backgroundColor: 'white',
     textAlign: 'center',
-    // Optional: Make the card content horizontal (Image left, text right)
-    // display: 'flex', 
-    // flexDirection: 'row', 
-    // alignItems: 'center'
+    display: 'flex',
+    flexDirection: 'column',
+    justifyContent: 'space-between'
   },
   productImage: {
-    width: '100%',           // Or fixed width (e.g., '150px') if using row layout
-    height: '250px',
+    width: '100%',
+    height: '200px',
     objectFit: 'cover',
     borderRadius: '8px',
     marginBottom: '15px'
@@ -244,19 +249,24 @@ const styles = {
     fontSize: '18px',
     color: '#34495e',
     margin: '0 0 10px 0',
+    whiteSpace: 'nowrap',
+    overflow: 'hidden',
+    textOverflow: 'ellipsis'
   },
   productDesc: {
     fontSize: '14px',
     color: '#777',
     marginBottom: '15px',
+    height: '40px',
+    overflow: 'hidden'
   },
   productFooter: {
     display: 'flex',
-    justifyContent: 'center', // Center the button
+    justifyContent: 'center',
     marginTop: 'auto'
   },
   cardBtn: {
-    padding: '8px 25px', 
+    padding: '8px 15px', 
     backgroundColor: '#3498db', 
     color: 'white', 
     textDecoration: 'none', 
@@ -264,28 +274,28 @@ const styles = {
     fontSize: '14px', 
     fontWeight: 'bold'
   },
-  
-  // SHARED ARROW STYLE
+
+  // --- ARROW STYLES ---
+  // We use getters/spread syntax to keep code clean
   arrowBtnBase: {
     backgroundColor: '#2c3e50',
     color: 'white',
     border: 'none',
     borderRadius: '50%',
-    width: '40px',
-    height: '40px',
+    width: '45px',
+    height: '45px',
     display: 'flex',
     justifyContent: 'center',
     alignItems: 'center',
     cursor: 'pointer',
     zIndex: 10,
-    fontSize: '18px',
+    fontSize: '20px',
     boxShadow: '0 2px 5px rgba(0,0,0,0.2)',
     position: 'absolute',
-    left: '50%',
-    transform: 'translateX(-50%)' // Centers arrow horizontally
+    left: '50%',              // Center horizontally
+    transform: 'translateX(-50%)' 
   },
-
-  // Combine base style with specific positions
+  
   get topArrowBtn() {
     return { ...this.arrowBtnBase, top: '0' };
   },

@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { FaSave, FaPlus, FaTimes, FaEdit } from 'react-icons/fa'; // Added FaEdit
 import API from '../api';
 
+
 const InventoryPage = () => {
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
