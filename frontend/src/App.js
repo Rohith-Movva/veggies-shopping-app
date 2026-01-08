@@ -37,8 +37,8 @@ function App() {
   // --- LOGOUT FUNCTION ---
   const handleLogout = () => {
     localStorage.removeItem('token');
-    setUser(null);
     setCart([]);
+    window.location.href = '/';
   };
 
 // Updated Add to Cart with "Cart Awareness" Logic
