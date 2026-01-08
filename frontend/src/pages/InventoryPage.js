@@ -152,7 +152,9 @@ const InventoryPage = () => {
           <thead>
             <tr style={styles.headerRow}>
               <th style={styles.th}>Product</th>
+              <th style={styles.th}>Price</th>
               <th style={styles.th}>Category</th>
+              <th style={styles.th}>Description</th>
               <th style={styles.th}>Current Stock</th>
               <th style={styles.th}>Update Stock</th>
               <th style={styles.th}>Action</th>
@@ -167,7 +169,9 @@ const InventoryPage = () => {
                     <strong>{product.name}</strong>
                   </div>
                 </td>
+                <td style={styles.td}>{product.price}</td>
                 <td style={styles.td}>{product.category}</td>
+                <td style={styles.td}>{product.description}</td>
                 <td style={styles.td}>
                   <span style={{ 
                     padding: '5px 10px', 
