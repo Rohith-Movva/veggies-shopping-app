@@ -1,7 +1,8 @@
 const express = require('express');
 const mongoose = require('mongoose');
 const cors = require('cors');
-const path = require('path'); // 🔴 1. IMPORT PATH MODULE
+const path = require('path');
+const fs = require('fs'); // 🔴 NEW: Import File System for debugging
 require('dotenv').config();
 
 const productRoutes = require('./routes/productRoutes');
@@ -14,10 +15,9 @@ const app = express();
 // Middleware
 app.use(express.json());
 
-// CORS Configuration (Updated for Production)
+// CORS Configuration
 app.use(cors({
-    origin: '*', // Allow all origins (Easiest for testing)
-    // If you face issues later, change '*' to your Vercel URL: 'https://agro-tech-frontend.vercel.app'
+    origin: '*', 
     credentials: true
 }));
 
@@ -31,11 +31,29 @@ app.use('/api/products', productRoutes);
 app.use('/api/orders', orderRoutes);
 app.use('/api/auth', authRoutes);
 
-// 🔴 2. CORRECTED IMAGE SERVING
-// This tells the server: "When someone asks for /images, look inside backend/public/images"
-// NOTE: Make sure your actual folder in VS Code is named 'public' with an 'images' folder inside it!
+// 🔴 DEBUGGING BLOCK: START
+// This will print to your Render Logs so we can see if the folder exists
+const uploadsPath = path.join(__dirname, 'uploads'); 
+console.log("📂 Server is trying to serve images from:", uploadsPath);
 
-app.use('/images', express.static(path.join(__dirname, 'uploads')));
+if (fs.existsSync(uploadsPath)) {
+    console.log("✅ Uploads folder exists!");
+    // List the files inside to verify they are there
+    try {
+        const files = fs.readdirSync(uploadsPath);
+        console.log("📄 Files found in uploads folder:", files);
+    } catch (err) {
+        console.log("❌ Error reading uploads folder:", err);
+    }
+} else {
+    console.log("❌ ERROR: Uploads folder NOT found at:", uploadsPath);
+    console.log("   (Did you forget to git add -f backend/uploads?)");
+}
+// 🔴 DEBUGGING BLOCK: END
+
+// Serve Images
+app.use('/images', express.static(uploadsPath));
+
 
 // Simple Test Route
 app.get('/', (req, res) => {
