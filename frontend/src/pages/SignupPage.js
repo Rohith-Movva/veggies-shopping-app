@@ -1,5 +1,4 @@
 import React, { useState } from 'react';
-import axios from 'axios';
 import { useNavigate, Link } from 'react-router-dom';
 import { FaHome } from 'react-icons/fa'; // Import Home Icon
 import API from '../api';

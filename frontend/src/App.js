@@ -35,7 +35,7 @@ function App() {
   const handleLogout = () => {
     localStorage.removeItem('token');
     localStorage.removeItem('userInfo'); // Clear userInfo too
-    setCart([]);
+    setCart([user]);
     window.location.href = '/';
   };
 

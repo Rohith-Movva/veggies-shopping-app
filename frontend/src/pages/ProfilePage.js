@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from 'react';
-import axios from 'axios';
 import { FaUserCircle, FaBoxOpen } from 'react-icons/fa';
 import API from '../api';
 

@@ -62,7 +62,7 @@ const AdminPage = () => {
   };
 
 
-  const lowStockItems = orders.flatMap(o => o.items).filter(i => false);
+  // const lowStockItems = orders.flatMap(o => o.items).filter(i => false);
 
   // Helper: Get Color based on Status
   const getStatusColor = (status) => {
