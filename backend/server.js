@@ -2,7 +2,6 @@ const express = require('express');
 const mongoose = require('mongoose');
 const cors = require('cors');
 const path = require('path');
-const fs = require('fs'); // 🔴 NEW: Import File System for debugging
 require('dotenv').config();
 
 const productRoutes = require('./routes/productRoutes');
@@ -31,29 +30,8 @@ app.use('/api/products', productRoutes);
 app.use('/api/orders', orderRoutes);
 app.use('/api/auth', authRoutes);
 
-// 🔴 DEBUGGING BLOCK: START
-// This will print to your Render Logs so we can see if the folder exists
-const uploadsPath = path.join(__dirname, 'uploads'); 
-console.log("📂 Server is trying to serve images from:", uploadsPath);
-
-if (fs.existsSync(uploadsPath)) {
-    console.log("✅ Uploads folder exists!");
-    // List the files inside to verify they are there
-    try {
-        const files = fs.readdirSync(uploadsPath);
-        console.log("📄 Files found in uploads folder:", files);
-    } catch (err) {
-        console.log("❌ Error reading uploads folder:", err);
-    }
-} else {
-    console.log("❌ ERROR: Uploads folder NOT found at:", uploadsPath);
-    console.log("   (Did you forget to git add -f backend/uploads?)");
-}
-// 🔴 DEBUGGING BLOCK: END
-
-// Serve Images
-app.use('/images', express.static(uploadsPath));
-
+// Serve Images (Clean and simple now)
+app.use('/images', express.static(path.join(__dirname, 'uploads')));
 
 // Simple Test Route
 app.get('/', (req, res) => {
