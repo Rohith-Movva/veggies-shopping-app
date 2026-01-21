@@ -1,32 +1,37 @@
 import React, { useState, useEffect } from 'react';
-import { FaSave, FaPlus, FaTimes, FaEdit } from 'react-icons/fa'; // Added FaEdit
+import { FaPlus, FaTimes, FaEdit, FaTrash } from 'react-icons/fa'; 
 import API from '../api';
-
 
 const InventoryPage = () => {
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [updatedStocks, setUpdatedStocks] = useState({});
-
-  // --- STATE FOR FORM (Create & Edit) ---
   const [showModal, setShowModal] = useState(false);
-  const [isEditing, setIsEditing] = useState(false); // Track if we are editing
-  const [currentProductId, setCurrentProductId] = useState(null); // Track which ID we are editing
-  
+  const [isEditing, setIsEditing] = useState(false);
+  const [currentProductId, setCurrentProductId] = useState(null);
+
+  const BACKEND_URL = "http://localhost:5000"; 
+
+  // 1. Updated State with ALL fields
   const [formData, setFormData] = useState({
     name: '',
-    category: 'vegetables', 
-    image: '',
+    category: 'vegetables',
+    image: '', 
     description: '',
     price: '',
-    stock: 0
+    stock: 0,
+    about: '',               // New
+    keyBenefits: '',         // New
+    usageInfo: '',           // New
+    recommendeddosage: '',   // New
+    manufacturingInfo: '',   // New
+    highlights: '',          // New
+    safetyInfo: ''           // New (Requested in JSX)
   });
 
-  // 1. Fetch Products
+  const [imageFile, setImageFile] = useState(null); 
+
   useEffect(() => {
     fetchProducts();
-    const intervalId = setInterval(fetchProducts, 5000);
-    return () => clearInterval(intervalId);
   }, []);
 
   const fetchProducts = async () => {
@@ -35,136 +40,190 @@ const InventoryPage = () => {
       setProducts(res.data);
       setLoading(false);
     } catch (err) {
-      console.error("Error fetching products:", err);
+      console.error(err);
       setLoading(false);
     }
   };
 
-  // 2. Handle Stock Input Change
-  const handleStockChange = (id, value) => {
-    setUpdatedStocks({ ...updatedStocks, [id]: value });
-  };
-
-  // 3. Save Stock Only
-  const handleUpdateStock = async (id) => {
-    const newStock = updatedStocks[id];
-    if (newStock === undefined || newStock === "") return;
-
-    try {
-      const token = localStorage.getItem('token');
-      const config = { headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` } };
-
-      await API.put(`/products/${id}/stock`, { stock: newStock }, config);
-      
-      alert('Stock Updated Successfully!');
-      fetchProducts();
-      
-      const remainingUpdates = { ...updatedStocks };
-      delete remainingUpdates[id];
-      setUpdatedStocks(remainingUpdates);
-
-    } catch (err) {
-      console.error("Error updating stock:", err);
-      alert("Failed to update stock.");
-    }
-  };
-
-  // --- 4. Handle Form Inputs ---
   const handleFormChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
-  // --- 5. OPEN CREATE MODAL ---
-  const openCreateModal = () => {
-    setIsEditing(false);
-    setFormData({ name: '', category: 'vegetables', image: '', description: '', price: '', stock: 0 });
-    setShowModal(true);
+  const handleFileChange = (e) => {
+    setImageFile(e.target.files[0]); 
   };
 
-  // --- 6. OPEN EDIT MODAL ---
-  const openEditModal = (product) => {
-    setIsEditing(true);
-    setCurrentProductId(product._id);
-    // Pre-fill form with existing data
+  const openCreateModal = () => {
+    setIsEditing(false);
+    setCurrentProductId(null);
+    setImageFile(null);
     setFormData({
-      name: product.name,
-      category: product.category,
-      image: product.image,
-      description: product.description,
-      price: product.price,
-      stock: product.stock // (Optional: usually we don't edit stock here if you have a separate stock updater, but we can keep it)
+      name: '',
+      category: 'vegetables',
+      image: '',
+      description: '',
+      price: '',
+      stock: 0,
+      about: '',
+      keyBenefits: '',
+      usageInfo: '',
+      recommendeddosage: '',
+      manufacturingInfo: '',
+      highlights: '',
+      safetyInfo: ''
     });
     setShowModal(true);
   };
 
-  // --- 7. SUBMIT FORM (Create or Update) ---
-  const handleFormSubmit = async (e) => {
-    e.preventDefault();
-    const token = localStorage.getItem('token');
-    const config = { headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` } };
+  const openEditModal = (product) => {
+    setIsEditing(true);
+    setCurrentProductId(product._id);
+    setImageFile(null);
+    setFormData({
+      name: product.name,
+      category: product.category,
+      image: product.image, 
+      description: product.description,
+      price: product.price,
+      stock: product.stock,
+      about: product.about || '',
+      keyBenefits: product.keyBenefits || '', 
+      usageInfo: product.usageInfo || '', 
+      recommendeddosage: product.recommendeddosage || '', 
+      manufacturingInfo: product.manufacturingInfo || '', 
+      highlights: product.highlights || '',
+      safetyInfo: product.safetyInfo || ''
+    });
+    setShowModal(true);
+  };
 
-    try {
-      if (isEditing) {
-        // === UPDATE EXISTING PRODUCT ===
-        await API.put(`/products/${currentProductId}`, formData, config);
-        alert('Product Updated Successfully! ✏️');
-      } else {
-        // === CREATE NEW PRODUCT ===
-        await API.post('/products', formData, config);
-        alert('Product Created Successfully! 🎉');
+  const handleDelete = async (id) => {
+    if (window.confirm("Are you sure you want to delete this product?")) {
+      try {
+        await API.delete(`/products/${id}`);
+        alert("Product Deleted!");
+        fetchProducts(); 
+      } catch (err) {
+        console.error(err);
+        alert("Failed to delete product");
       }
-
-      // Cleanup
-      setShowModal(false);
-      fetchProducts(); // Refresh list
-    } catch (err) {
-      console.error("Error saving product:", err);
-      alert("Failed to save product.");
     }
   };
 
-  if (loading) return <div style={{ textAlign: 'center', marginTop: '50px' }}>Loading Inventory...</div>;
+  const handleFormSubmit = async (e) => {
+    e.preventDefault();
+
+    try {
+      const submitData = new FormData();
+      submitData.append('name', formData.name);
+      submitData.append('category', formData.category);
+      submitData.append('description', formData.description);
+      submitData.append('price', formData.price);
+      submitData.append('stock', formData.stock);
+
+      // 2. Append ALL New Fields
+      submitData.append('about', formData.about);
+      submitData.append('keyBenefits', formData.keyBenefits);
+      submitData.append('usageInfo', formData.usageInfo);
+      submitData.append('recommendeddosage', formData.recommendeddosage);
+      submitData.append('manufacturingInfo', formData.manufacturingInfo);
+      submitData.append('highlights', formData.highlights);
+      submitData.append('safetyInfo', formData.safetyInfo);
+
+      if (imageFile) {
+        submitData.append('image', imageFile); 
+      } else {
+        submitData.append('image', formData.image); 
+      }
+
+      if (isEditing) {
+        await API.put(`/products/${currentProductId}`, submitData);
+        alert('Product Updated Successfully!');
+      } else {
+        await API.post('/products', submitData);
+        alert('Product Created Successfully!');
+      }
+
+      setShowModal(false);
+      fetchProducts();
+    } catch (err) {
+      console.error(err);
+      alert('Failed to save product.');
+    }
+  };
+
+  const renderImageSrc = (imgString) => {
+      if (!imgString) return '';
+      if (imgString.startsWith('http')) return imgString;
+      return `${BACKEND_URL}/images/${imgString}`;
+  };
+
+  if (loading) return <h3 style={{ textAlign: 'center', marginTop: '50px' }}>Loading Inventory...</h3>;
 
   return (
     <div style={styles.container}>
-      
-      {/* Header */}
       <div style={styles.headerContainer}>
-        <h2 style={{ color: '#2c3e50', margin: 0 }}>Inventory Management 📦</h2>
+        <h2>Inventory Management 📦</h2>
         <button style={styles.createButton} onClick={openCreateModal}>
           <FaPlus /> Add New Product
         </button>
       </div>
 
-      {/* --- MODAL (Shared for Create & Edit) --- */}
       {showModal && (
         <div style={styles.modalOverlay}>
           <div style={styles.modalContent}>
             <div style={styles.modalHeader}>
-              <h3>{isEditing ? 'Edit Product' : 'Create New Product'}</h3>
-              <button onClick={() => setShowModal(false)} style={styles.closeButton}><FaTimes /></button>
+              <h3>{isEditing ? 'Edit Product' : 'Create Product'}</h3>
+              <button onClick={() => setShowModal(false)} style={styles.closeBtn}><FaTimes /></button>
             </div>
-            
+
             <form onSubmit={handleFormSubmit} style={styles.form}>
-              <label style={styles.label}>Category</label>
-              <select name="category" value={formData.category} onChange={handleFormChange} style={styles.modalInput}>
-                <option value="vegetables">vegetables</option>
-                <option value="powders">powders</option>
+              <input name="name" placeholder="Product Name" value={formData.name} onChange={handleFormChange} required style={styles.input} />
+              
+              <div style={{marginBottom: '10px', padding: '10px', background: '#f9f9f9', borderRadius: '5px'}}>
+                  <label style={{fontSize:'12px', fontWeight:'bold'}}>Option 1: Image URL</label>
+                  <input name="image" placeholder="https://example.com/image.png" value={formData.image} onChange={handleFormChange} style={styles.input} />
+                  
+                  <div style={{textAlign:'center', margin: '5px 0', fontSize:'12px'}}>OR</div>
+                  
+                  <label style={{fontSize:'12px', fontWeight:'bold'}}>Option 2: Upload File (PNG)</label>
+                  <input type="file" accept="image/png, image/jpeg" onChange={handleFileChange} style={{marginTop:'5px'}} />
+              </div>
+
+              {/* 3. New Text Areas Section */}
+              <div style={{ maxHeight: '200px', overflowY: 'auto', border: '1px solid #eee', padding: '10px', marginBottom: '10px' }}>
+                  <p style={{fontSize: '12px', fontWeight: 'bold', color: '#555', marginBottom: '5px'}}>Product Details</p>
+                  
+                  <textarea name="description" placeholder="Main Description" value={formData.description} onChange={handleFormChange} required style={{...styles.input, height: '60px'}} />
+                  
+                  <textarea name="about" placeholder="About This Product (Extra Info)" value={formData.about} onChange={handleFormChange} style={{...styles.input, height: '60px'}} />
+
+                  <textarea name="keyBenefits" placeholder="Key Benefits (Enter bullet points)" value={formData.keyBenefits} onChange={handleFormChange} style={{...styles.input, height: '60px'}} />
+
+                  <textarea name="highlights" placeholder="Product Highlights" value={formData.highlights} onChange={handleFormChange} style={{...styles.input, height: '60px'}} />
+
+                  <div style={{display:'flex', gap:'5px'}}>
+                    <textarea name="usageInfo" placeholder="Usage / How to Use" value={formData.usageInfo} onChange={handleFormChange} style={{...styles.input, height: '60px'}} />
+                    <textarea name="recommendeddosage" placeholder="Recommended Dosage" value={formData.recommendeddosage} onChange={handleFormChange} style={{...styles.input, height: '60px'}} />
+                  </div>
+
+                  <div style={{display:'flex', gap:'5px'}}>
+                    <textarea name="manufacturingInfo" placeholder="Manufacturing Info" value={formData.manufacturingInfo} onChange={handleFormChange} style={{...styles.input, height: '60px'}} />
+                    <textarea name="safetyInfo" placeholder="Safety Information" value={formData.safetyInfo} onChange={handleFormChange} style={{...styles.input, height: '60px'}} />
+                  </div>
+              </div>
+
+              <div style={{display:'flex', gap:'10px'}}>
+                <input type="number" name="price" placeholder="Price" value={formData.price} onChange={handleFormChange} required style={styles.input} />
+                <input type="number" name="stock" placeholder="Stock" value={formData.stock} onChange={handleFormChange} required style={styles.input} />
+              </div>
+
+              <select name="category" value={formData.category} onChange={handleFormChange} style={styles.input}>
+                  <option value="vegetables">Vegetables</option>
+                  <option value="powders">Raw Powders</option>
               </select>
 
-              <label style={styles.label}>Product Name</label>
-              <input type="text" name="name" placeholder="Name" value={formData.name} onChange={handleFormChange} required style={styles.modalInput}/>
-
-              <label style={styles.label}>Image Link</label>
-              <input type="text" name="image" placeholder="Image URL" value={formData.image} onChange={handleFormChange} required style={styles.modalInput}/>
-
-              <label style={styles.label}>Description</label>
-              <textarea name="description" placeholder="Description" value={formData.description} onChange={handleFormChange} required style={{...styles.modalInput, height: '60px'}}/>
-
-              <label style={styles.label}>Price</label>
-              <input type="number" name="price" placeholder="Price" value={formData.price} onChange={handleFormChange} required style={styles.modalInput}/>
-
-              <button type="submit" style={isEditing ? styles.updateButton : styles.createButtonModal}>
+              <button type="submit" style={styles.submitBtn}>
                 {isEditing ? 'Update Product' : 'Create Product'}
               </button>
             </form>
@@ -172,67 +231,39 @@ const InventoryPage = () => {
         </div>
       )}
 
-      {/* Table */}
       <div style={styles.tableContainer}>
         <table style={styles.table}>
           <thead>
-            <tr style={styles.headerRow}>
-              <th style={styles.th}>Product</th>
-              <th style={styles.th}>Price</th>
-              <th style={styles.th}>Category</th>
-              <th style={styles.th}>Description</th>
-              <th style={styles.th}>Stock</th>
-              <th style={styles.th}>Update Stock</th>
-              <th style={styles.th}>Actions</th>
+            <tr style={{background: '#eee'}}>
+                <th style={styles.th}>Image</th>
+                <th style={styles.th}>Name</th>
+                <th style={styles.th}>Price</th>
+                <th style={styles.th}>Stock</th>
+                <th style={styles.th}>Actions</th>
             </tr>
           </thead>
           <tbody>
-            {products.map((product) => (
-              <tr key={product._id} style={styles.row}>
+            {products.map((p) => (
+              <tr key={p._id} style={{borderBottom: '1px solid #eee'}}>
                 <td style={styles.td}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                    <img src={product.image} alt={product.name} style={styles.productImg} />
-                    <strong>{product.name}</strong>
-                  </div>
-                </td>
-                <td style={styles.td}>₹{product.price}</td>
-                <td style={styles.td}>{product.category}</td>
-                <td style={styles.td}>{product.description?.substring(0, 30)}...</td>
-                
-                {/* Current Stock */}
-                <td style={styles.td}>
-                  <span style={{ 
-                    padding: '5px 10px', 
-                    borderRadius: '15px', 
-                    backgroundColor: product.stock > 0 ? '#eafaf1' : '#fdedec',
-                    color: product.stock > 0 ? '#27ae60' : '#e74c3c',
-                    fontWeight: 'bold'
-                  }}>
-                    {product.stock || 0}
-                  </span>
-                </td>
-
-                {/* Stock Update Input */}
-                <td style={styles.td}>
-                  <div style={{ display: 'flex', gap: '5px' }}>
-                    <input 
-                      type="number" 
-                      placeholder="+/-"
-                      value={updatedStocks[product._id] !== undefined ? updatedStocks[product._id] : ''}
-                      onChange={(e) => handleStockChange(product._id, e.target.value)}
-                      style={styles.input}
+                    <img 
+                        src={renderImageSrc(p.image)} 
+                        alt={p.name} 
+                        style={{width: '50px', height: '50px', objectFit: 'cover', borderRadius: '5px'}} 
                     />
-                    <button onClick={() => handleUpdateStock(product._id)} style={styles.saveButton} title="Save Stock">
-                      <FaSave />
+                </td>
+                <td style={styles.td}>{p.name}</td>
+                <td style={styles.td}>₹{p.price}</td>
+                <td style={styles.td}>{p.stock}</td>
+                <td style={styles.td}>
+                  <div style={{ display: 'flex', gap: '10px' }}>
+                    <button onClick={() => openEditModal(p)} style={styles.editBtn}>
+                      <FaEdit /> Edit
+                    </button>
+                    <button onClick={() => handleDelete(p._id)} style={styles.deleteBtn}>
+                      <FaTrash /> Delete
                     </button>
                   </div>
-                </td>
-
-                {/* Edit Action */}
-                <td style={styles.td}>
-                  <button onClick={() => openEditModal(product)} style={styles.editButton} title="Edit Details">
-                    <FaEdit /> Edit
-                  </button>
                 </td>
               </tr>
             ))}
@@ -243,34 +274,25 @@ const InventoryPage = () => {
   );
 };
 
-// Styles
+// BASIC STYLES
 const styles = {
-  container: { padding: '30px', maxWidth: '1200px', margin: '0 auto', position: 'relative' },
-  headerContainer: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '30px' },
-  createButton: { backgroundColor: '#27ae60', color: 'white', border: 'none', padding: '10px 20px', borderRadius: '5px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '8px', fontSize: '16px', fontWeight: 'bold' },
-  tableContainer: { boxShadow: '0 4px 8px rgba(0,0,0,0.05)', borderRadius: '10px', overflow: 'hidden' },
-  table: { width: '100%', borderCollapse: 'collapse', backgroundColor: 'white' },
-  headerRow: { backgroundColor: '#2c3e50', color: 'white' },
-  th: { padding: '15px', textAlign: 'left', borderBottom: '2px solid #ddd' },
-  row: { borderBottom: '1px solid #eee' },
-  td: { padding: '15px', verticalAlign: 'middle' },
-  productImg: { width: '40px', height: '40px', borderRadius: '5px', objectFit: 'cover' },
-  input: { padding: '8px', borderRadius: '5px', border: '1px solid #ccc', width: '60px' },
-  
-  // Buttons
-  saveButton: { padding: '8px', backgroundColor: '#3498db', color: 'white', border: 'none', borderRadius: '5px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' },
-  editButton: { padding: '8px 12px', backgroundColor: '#f39c12', color: 'white', border: 'none', borderRadius: '5px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '5px' },
-
-  // Modal Styles
+  container: { padding: '20px', maxWidth: '1000px', margin: '0 auto' },
+  headerContainer: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' },
+  createButton: { background: '#27ae60', color: 'white', padding: '10px 20px', border: 'none', borderRadius: '5px', cursor: 'pointer', display:'flex', alignItems:'center', gap:'5px' },
   modalOverlay: { position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: 'rgba(0,0,0,0.5)', display: 'flex', justifyContent: 'center', alignItems: 'center', zIndex: 1000 },
-  modalContent: { backgroundColor: 'white', padding: '30px', borderRadius: '10px', width: '400px', boxShadow: '0 5px 15px rgba(0,0,0,0.3)', maxHeight: '90vh', overflowY: 'auto' },
-  modalHeader: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' },
-  closeButton: { background: 'none', border: 'none', fontSize: '20px', cursor: 'pointer' },
-  form: { display: 'flex', flexDirection: 'column', gap: '15px' },
-  label: { fontWeight: 'bold', fontSize: '14px', color: '#555' },
-  modalInput: { padding: '10px', borderRadius: '5px', border: '1px solid #ccc', fontSize: '16px' },
-  createButtonModal: { padding: '12px', backgroundColor: '#27ae60', color: 'white', border: 'none', borderRadius: '5px', cursor: 'pointer', fontSize: '16px', fontWeight: 'bold', marginTop: '10px' },
-  updateButton: { padding: '12px', backgroundColor: '#e67e22', color: 'white', border: 'none', borderRadius: '5px', cursor: 'pointer', fontSize: '16px', fontWeight: 'bold', marginTop: '10px' }
+  // Increased width to fit new fields comfortably
+  modalContent: { background: 'white', padding: '20px', borderRadius: '8px', width: '600px', maxWidth: '95%', maxHeight: '90vh', overflowY: 'auto' },
+  modalHeader: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '15px' },
+  closeBtn: { background: 'none', border: 'none', fontSize: '18px', cursor: 'pointer' },
+  form: { display: 'flex', flexDirection: 'column', gap: '10px' },
+  input: { padding: '10px', border: '1px solid #ddd', borderRadius: '4px', width: '100%', boxSizing: 'border-box', marginBottom: '5px', fontFamily: 'inherit' },
+  submitBtn: { padding: '12px', background: '#3498db', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer', fontWeight: 'bold' },
+  tableContainer: { overflowX: 'auto', boxShadow: '0 0 10px rgba(0,0,0,0.05)', borderRadius: '8px' },
+  table: { width: '100%', borderCollapse: 'collapse' },
+  th: { padding: '12px', textAlign: 'left', borderBottom: '2px solid #ddd' },
+  td: { padding: '12px', verticalAlign: 'middle' },
+  editBtn: { padding: '6px 12px', background: '#f39c12', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '5px' },
+  deleteBtn: { padding: '6px 12px', background: '#e74c3c', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '5px' }
 };
 
 export default InventoryPage;

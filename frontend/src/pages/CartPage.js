@@ -1,15 +1,16 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import axios from 'axios';
 import API from '../api';
 
 const CartPage = ({ user, cart, setCart, removeFromCart, updateQuantity }) => {
   const navigate = useNavigate();
   
   // --- FORM STATE ---
-  // Pre-fill name if user is logged in, otherwise empty
   const [customerName, setCustomerName] = useState(user ? user.name : '');
   const [customerAddress, setCustomerAddress] = useState('');
+  
+  // 🔴 NEW: Define Backend URL for images
+  const BACKEND_URL = "http://localhost:5000";
 
   // Update name if user prop loads late
   useEffect(() => {
@@ -26,7 +27,6 @@ const CartPage = ({ user, cart, setCart, removeFromCart, updateQuantity }) => {
     const MAX_LIMIT = 10;
     const currentStock = item.stock; 
     
-    // The Limit is whichever is smaller: 10 or the Stock
     const effectiveLimit = Math.min(MAX_LIMIT, currentStock);
 
     if (item.quantity < effectiveLimit) {
@@ -40,8 +40,15 @@ const CartPage = ({ user, cart, setCart, removeFromCart, updateQuantity }) => {
     }
   };
 
+  // 🔴 NEW: Helper to render image source correctly
+  const renderImageSrc = (imgString) => {
+      if (!imgString) return '';
+      if (imgString.startsWith('http')) return imgString;
+      return `${BACKEND_URL}/images/${imgString}`;
+  };
+
   const handlePlaceOrder = async () => {
-    // Validation: Check if form fields are empty
+    // Validation
     if (!customerName || !customerAddress) {
       alert("Please fill in your Name and Shipping Address to place the order.");
       return;
@@ -56,7 +63,7 @@ const CartPage = ({ user, cart, setCart, removeFromCart, updateQuantity }) => {
     }));
 
     const orderData = {
-      user: user.id,
+      user: user ? user.id : null, // Handle guest checkout safety
       customerName,
       customerAddress,
       items: formattedItems,
@@ -64,10 +71,6 @@ const CartPage = ({ user, cart, setCart, removeFromCart, updateQuantity }) => {
     };
 
     try {
-      const token = localStorage.getItem('token');
-      const config = token ? { headers: { Authorization: `Bearer ${token}` } } : {};
-      
-      //await axios.post('http://localhost:5000/api/orders', orderData, config);
       await API.post('/orders', orderData);
       
       alert('Order Placed Successfully!');
@@ -90,7 +93,13 @@ const CartPage = ({ user, cart, setCart, removeFromCart, updateQuantity }) => {
         <div style={styles.cartList}>
           {cart.map((item) => (
             <div key={item._id} style={styles.cartItem}>
-              <img src={item.image} alt={item.name} style={styles.image} />
+              
+              {/* 🔴 FIXED: Use helper function for image src */}
+              <img 
+                src={renderImageSrc(item.image)} 
+                alt={item.name} 
+                style={styles.image} 
+              />
               
               <div style={styles.details}>
                 <h3>{item.name}</h3>
@@ -171,9 +180,8 @@ const styles = {
     padding: '20px', 
     display: 'flex', 
     gap: '30px', 
-    flexWrap: 'wrap' // Responsive wrapping
+    flexWrap: 'wrap' 
   },
-  // Cart Items Section
   cartSection: { flex: 2, minWidth: '300px' },
   cartList: { display: 'flex', flexDirection: 'column', gap: '20px' },
   cartItem: { 
@@ -205,8 +213,6 @@ const styles = {
     borderRadius: '3px', 
     cursor: 'pointer' 
   },
-
-  // Checkout Form Section
   checkoutSection: { flex: 1, minWidth: '300px' },
   summaryCard: {
     backgroundColor: '#f9f9f9',
@@ -214,7 +220,7 @@ const styles = {
     borderRadius: '10px',
     border: '1px solid #eee',
     position: 'sticky',
-    top: '100px' // Stick to top while scrolling
+    top: '100px'
   },
   formGroup: { marginBottom: '15px' },
   label: { display: 'block', marginBottom: '5px', fontWeight: 'bold', fontSize: '14px', color: '#555' },
@@ -224,7 +230,7 @@ const styles = {
     borderRadius: '5px',
     border: '1px solid #ccc',
     fontSize: '14px',
-    boxSizing: 'border-box' // Prevents padding from breaking width
+    boxSizing: 'border-box' 
   },
   divider: { height: '1px', backgroundColor: '#ddd', margin: '20px 0' },
   totalRow: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontWeight: 'bold', marginBottom: '20px' },

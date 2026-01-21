@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
+import { FaLeaf, FaFlask, FaCertificate, FaBan, FaArrowRight } from 'react-icons/fa'; // 🔴 NEW ICONS
 import logo from '../assets/logo.png';
+import farmBg from '../assets/farm-bg.png'; // 🔴 IMPORT YOUR IMAGE HERE
 import API from '../api'; 
 
 const LandingPage = () => {
@@ -10,6 +12,9 @@ const LandingPage = () => {
   // --- 1. RESPONSIVE STATE ---
   const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
 
+  // Backend URL for images
+  const BACKEND_URL = "http://localhost:5000"; 
+
   useEffect(() => {
     const handleResize = () => setIsMobile(window.innerWidth < 768);
     window.addEventListener('resize', handleResize);
@@ -17,7 +22,6 @@ const LandingPage = () => {
     const fetchPowders = async () => {
       try {
         const { data } = await API.get('/products');
-        // Filter only powders as per requirements
         const powderList = data.filter(p => p.category.toLowerCase() === 'powders');
         setPowders(powderList);
       } catch (err) {
@@ -28,6 +32,12 @@ const LandingPage = () => {
 
     return () => window.removeEventListener('resize', handleResize);
   }, []);
+
+  const renderImageSrc = (imgString) => {
+      if (!imgString) return '';
+      if (imgString.startsWith('http')) return imgString;
+      return `${BACKEND_URL}/images/${imgString}`;
+  };
 
   const styles = getStyles(isMobile);
 
@@ -53,16 +63,18 @@ const LandingPage = () => {
         </div>
       </header>
 
-      {/* --- HERO --- */}
+      {/* --- HERO SECTION (Updated with Image) --- */}
       <div style={styles.hero}>
-        <h1 style={styles.heroTitle}>Pure. Organic. Fresh.</h1>
-        <p style={styles.heroText}>
-          Experience the finest authentic raw powders, delivered directly from the farm to your doorstep.
-        </p>
-        <Link to="/signup" style={styles.ctaButton}>Join the Harvest</Link>
+        <div style={styles.heroOverlay}>
+            <h1 style={styles.heroTitle}>Pure. Organic. Fresh.</h1>
+            <p style={styles.heroText}>
+            Experience the finest authentic raw powders, delivered directly from the farm to your doorstep.
+            </p>
+            <Link to="/signup" style={styles.ctaButton}>Join the Harvest</Link>
+        </div>
       </div>
 
-      {/* --- PRODUCT GRID SECTION (No Arrows, Just List) --- */}
+      {/* --- PRODUCT GRID SECTION --- */}
       <div style={styles.section}>
         <h2 style={{ textAlign: 'center', color: '#2c3e50', marginBottom: '40px' }}>
           ✨ Our Premium Selections
@@ -73,13 +85,15 @@ const LandingPage = () => {
           {powders.length > 0 ? (
             powders.map((product) => (
               <div key={product._id} style={styles.productCard}>
-                <img src={product.image} alt={product.name} style={styles.productImage} />
+                
+                <img 
+                    src={renderImageSrc(product.image)} 
+                    alt={product.name} 
+                    style={styles.productImage} 
+                />
                 
                 <h3 style={styles.productTitle}>{product.name}</h3>
                 
-                {/* Optional: Add price if you want it to look exactly like the image provided */}
-                {/* <p style={{color: '#27ae60', fontWeight: 'bold', margin: '5px 0'}}>₹{product.price}</p> */}
-
                 <p style={styles.productDesc}>
                   {product.description.substring(0, 50)}...
                 </p>
@@ -97,14 +111,57 @@ const LandingPage = () => {
         </div>
       </div>
 
-      {/* --- ABOUT --- */}
-      <div style={styles.about}>
-        <h2>Why Choose Us?</h2>
-        <div style={styles.features}>
-          <div style={styles.featureBox}>🌱 100% Organic</div>
-          <div style={styles.featureBox}>🚜 Farm to Table</div>
-          <div style={styles.featureBox}>🚀 Fast Delivery</div>
+      {/* --- TRUST BADGES SECTION (New) --- */}
+      <div style={styles.trustSection}>
+        <h2 style={{color: '#2c3e50', marginBottom: '40px'}}>Our Promise of Purity</h2>
+        <div style={styles.trustGrid}>
+            
+            {/* Badge 1 */}
+            <div style={styles.trustBadge}>
+                <div style={styles.iconCircle}>
+                    <FaFlask />
+                </div>
+                <h3>Lab Tested</h3>
+                <p>Every batch tested for purity</p>
+            </div>
+
+            {/* Badge 2 */}
+            <div style={styles.trustBadge}>
+                <div style={styles.iconCircle}>
+                    <FaCertificate />
+                </div>
+                <h3>FSSAI Certified</h3>
+                <p>100% Compliant & Safe</p>
+            </div>
+
+            {/* Badge 3 */}
+            <div style={styles.trustBadge}>
+                <div style={styles.iconCircle}>
+                    <FaLeaf />
+                </div>
+                <h3>100% Organic</h3>
+                <p>No chemicals, nature only</p>
+            </div>
+
+            {/* Badge 4 */}
+            <div style={styles.trustBadge}>
+                <div style={styles.iconCircle}>
+                    <FaBan />
+                </div>
+                <h3>Non-GMO</h3>
+                <p>Authentic native seeds</p>
+            </div>
+
         </div>
+      </div>
+
+      {/* --- QUICK LINK / BOTTOM CTA --- */}
+      <div style={styles.storySection}>
+          <h2>Discover Our Roots</h2>
+          <p>Learn about Pranay & Abhishek's journey from a simple rural family to Agro Tech Harvest.</p>
+          <Link to="/about" style={styles.storyBtn}>
+              Read Our Story <FaArrowRight />
+          </Link>
       </div>
 
       {/* --- CONTACT MODAL --- */}
@@ -162,18 +219,40 @@ const getStyles = (isMobile) => ({
   loginBtn: { marginRight: '20px', textDecoration: 'none', color: '#2c3e50', fontWeight: 'bold' },
   signupBtn: { padding: '10px 20px', backgroundColor: '#27ae60', color: 'white', textDecoration: 'none', borderRadius: '5px', fontWeight: 'bold' },
   
-  // Hero
+  // 🔴 UPDATED HERO SECTION with Background Image
   hero: { 
       textAlign: 'center', 
-      padding: isMobile ? '40px 15px' : '50px 20px', 
-      backgroundColor: '#f9f9f9', 
-      color: '#333' 
+      // This gradient creates the "Shaded" effect so white text is readable
+      backgroundImage: `linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.5)), url(${farmBg})`,
+      backgroundSize: 'cover',
+      backgroundPosition: 'center',
+      color: 'white',
+      padding: isMobile ? '80px 15px' : '120px 20px', 
   },
-  heroTitle: { fontSize: isMobile ? '2.5rem' : '3.5rem', marginBottom: '20px' },
-  heroText: { fontSize: isMobile ? '1rem' : '1.2rem', maxWidth: '600px', margin: '0 auto 40px' },
-  ctaButton: { padding: '15px 40px', backgroundColor: '#e67e22', color: 'white', fontSize: '1.2rem', textDecoration: 'none', borderRadius: '30px', fontWeight: 'bold', display: 'inline-block' },
+  heroTitle: { 
+      fontSize: isMobile ? '2.5rem' : '4rem', 
+      marginBottom: '20px', 
+      textShadow: '2px 2px 4px rgba(0,0,0,0.5)' // Text shadow for better readability
+  },
+  heroText: { 
+      fontSize: isMobile ? '1rem' : '1.3rem', 
+      maxWidth: '700px', 
+      margin: '0 auto 40px',
+      textShadow: '1px 1px 2px rgba(0,0,0,0.5)' 
+  },
+  ctaButton: { 
+      padding: '15px 40px', 
+      backgroundColor: '#e67e22', 
+      color: 'white', 
+      fontSize: '1.2rem', 
+      textDecoration: 'none', 
+      borderRadius: '30px', 
+      fontWeight: 'bold', 
+      display: 'inline-block',
+      boxShadow: '0 4px 15px rgba(230, 126, 34, 0.4)'
+  },
 
-  // --- GRID SECTION STYLES (NEW) ---
+  // --- GRID SECTION STYLES ---
   section: {
     padding: '60px 20px',
     backgroundColor: 'white',
@@ -182,9 +261,8 @@ const getStyles = (isMobile) => ({
   },
   productGrid: {
     display: 'grid',
-    // Logic: 1 column on mobile, exactly 3 columns on desktop
     gridTemplateColumns: isMobile ? '1fr' : 'repeat(3, 1fr)', 
-    gap: '30px', // Space between cards
+    gap: '30px', 
     width: '100%',
     padding: '10px'
   },
@@ -192,24 +270,24 @@ const getStyles = (isMobile) => ({
     border: '1px solid #eee',
     borderRadius: '10px',
     padding: '15px',
-    boxShadow: '0 4px 8px rgba(0,0,0,0.08)', // Slightly stronger shadow like the image
+    boxShadow: '0 4px 8px rgba(0,0,0,0.08)', 
     backgroundColor: 'white',
     textAlign: 'center',
     display: 'flex',
     flexDirection: 'column',
     justifyContent: 'space-between',
-    height: '100%', // Ensures all cards in a row are same height
+    height: '100%', 
     minHeight: '350px'
   },
   productImage: {
     width: '100%',
     height: '200px',
-    objectFit: 'cover', // Ensures image covers area without stretching
+    objectFit: 'cover', 
     borderRadius: '8px',
     marginBottom: '15px'
   },
   productTitle: { fontSize: '18px', color: '#34495e', margin: '0 0 10px 0', fontWeight: 'bold' },
-  productDesc: { fontSize: '14px', color: '#777', marginBottom: '15px', flexGrow: 1 }, // flexGrow pushes button down
+  productDesc: { fontSize: '14px', color: '#777', marginBottom: '15px', flexGrow: 1 }, 
   productFooter: { marginTop: 'auto' },
   cardBtn: { 
     display: 'block',
@@ -223,24 +301,62 @@ const getStyles = (isMobile) => ({
     fontWeight: 'bold' 
   },
 
-  // About Section
-  about: { padding: '60px 20px', textAlign: 'center' },
-  features: { 
-      display: 'flex', 
-      flexDirection: isMobile ? 'column' : 'row', 
-      alignItems: 'center',
-      justifyContent: 'center', 
-      gap: '30px', 
-      marginTop: '30px' 
+  // 🔴 NEW: TRUST SECTION STYLES
+  trustSection: {
+    backgroundColor: '#f9f9f9',
+    padding: '60px 20px',
+    textAlign: 'center'
   },
-  featureBox: { 
-      padding: '30px', 
-      border: '1px solid #ddd', 
-      borderRadius: '10px', 
-      width: isMobile ? '100%' : '200px', 
-      maxWidth: '300px',
-      fontSize: '1.2rem',
-      boxSizing: 'border-box'
+  trustGrid: {
+    display: 'flex',
+    flexWrap: 'wrap',
+    justifyContent: 'center',
+    gap: '40px',
+    maxWidth: '1000px',
+    margin: '0 auto'
+  },
+  trustBadge: {
+    flex: '1 1 200px',
+    display: 'flex',
+    flexDirection: 'column',
+    alignItems: 'center',
+    padding: '20px',
+  },
+  iconCircle: {
+    width: '80px',
+    height: '80px',
+    backgroundColor: 'white',
+    borderRadius: '50%',
+    display: 'flex',
+    justifyContent: 'center',
+    alignItems: 'center',
+    fontSize: '32px',
+    color: '#27ae60',
+    marginBottom: '15px',
+    boxShadow: '0 5px 15px rgba(0,0,0,0.05)',
+    border: '1px solid #e1e1e1'
+  },
+
+  // 🔴 NEW: BOTTOM STORY SECTION
+  storySection: {
+    backgroundColor: '#2c3e50',
+    color: 'white',
+    textAlign: 'center',
+    padding: '50px 20px',
+  },
+  storyBtn: {
+    display: 'inline-flex',
+    alignItems: 'center',
+    gap: '10px',
+    marginTop: '20px',
+    color: '#e67e22',
+    textDecoration: 'none',
+    fontWeight: 'bold',
+    fontSize: '18px',
+    border: '2px solid #e67e22',
+    padding: '10px 25px',
+    borderRadius: '30px',
+    transition: 'all 0.3s'
   },
 
   // Modal

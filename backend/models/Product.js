@@ -7,6 +7,13 @@ const productSchema = new mongoose.Schema({
   category: { type: String, required: true },
   price: { type: Number, required: true, default: 0 },
   stock: { type: Number, required: true, default: 0 }, 
+  
+  about: { type: String },
+  keyBenefits: { type: String },
+  usageInfo: { type: String },
+  recommendeddosage: { type: String },
+  manufacturingInfo: { type: String },
+  highlights: { type: String },
   createdAt: { type: Date, default: Date.now }
 });
 

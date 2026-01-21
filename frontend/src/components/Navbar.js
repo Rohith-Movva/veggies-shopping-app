@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import axios from 'axios';
 import { FaSearch, FaUser, FaShoppingCart, FaSignOutAlt, FaLock } from 'react-icons/fa';
 import logo from '../assets/logo.png';
 import './Navbar.css';
@@ -13,10 +12,12 @@ const Navbar = ({ user, cartCount, handleLogout }) => {
   const [searchResults, setSearchResults] = useState([]);
   const navigate = useNavigate();
 
+  // 🔴 NEW: Backend URL for images
+  const BACKEND_URL = "http://localhost:5000"; 
+
   useEffect(() => {
     const fetchProducts = async () => {
       try {
-        //const res = await axios.get('http://localhost:5000/api/products');
         const res = await API.get('/products');
         setAllProducts(res.data);
       } catch (err) {
@@ -64,14 +65,22 @@ const Navbar = ({ user, cartCount, handleLogout }) => {
           />
           <button><FaSearch /></button>
         </div>
+        
         {searchTerm && searchResults.length > 0 && (
           <div className="search-results">
-            {searchResults.map(product => (
-              <div key={product._id} className="search-item" onClick={() => handleResultClick(product._id)}>
-                <img src={product.image} alt={product.name} />
-                <span>{product.name}</span>
-              </div>
-            ))}
+            {searchResults.map(product => {
+                // 🔴 FIXED: Image Logic for Search Results
+                const imageUrl = product.image.startsWith('http') 
+                    ? product.image 
+                    : `${BACKEND_URL}/images/${product.image}`;
+
+                return (
+                  <div key={product._id} className="search-item" onClick={() => handleResultClick(product._id)}>
+                    <img src={imageUrl} alt={product.name} />
+                    <span>{product.name}</span>
+                  </div>
+                );
+            })}
           </div>
         )}
       </div>
