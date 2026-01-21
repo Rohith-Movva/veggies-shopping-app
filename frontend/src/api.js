@@ -5,7 +5,7 @@ import axios from 'axios';
 // This automatically switches between Localhost (for you) and Render (for the public)
 const API_URL = window.location.hostname === 'localhost' 
   ? "http://localhost:5000/api" 
-  : "https://veggies-shopping-app.onrender.com"; // 👈 REPLACE THIS with your actual Render URL
+  : "https://veggies-shopping-app.onrender.com/api"; // 👈 REPLACE THIS with your actual Render URL
 
 const API = axios.create({
   baseURL: API_URL
