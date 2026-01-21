@@ -9,7 +9,10 @@ const ProductDetails = ({ addToCart }) => {
   const [product, setProduct] = useState(null);
   const [quantity, setQuantity] = useState(1);
 
-  const BACKEND_URL = "http://localhost:5000"; 
+
+  const BACKEND_URL = window.location.hostname === 'localhost' 
+    ? "http://localhost:5000" 
+    : "https://veggies-shopping-app.onrender.com"; 
 
   useEffect(() => {
     const fetchProduct = async () => {

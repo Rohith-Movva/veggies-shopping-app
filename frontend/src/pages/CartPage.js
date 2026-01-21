@@ -9,8 +9,9 @@ const CartPage = ({ user, cart, setCart, removeFromCart, updateQuantity }) => {
   const [customerName, setCustomerName] = useState(user ? user.name : '');
   const [customerAddress, setCustomerAddress] = useState('');
   
-  // 🔴 NEW: Define Backend URL for images
-  const BACKEND_URL = "http://localhost:5000";
+  const BACKEND_URL = window.location.hostname === 'localhost' 
+    ? "http://localhost:5000" 
+    : "https://veggies-shopping-app.onrender.com";
 
   // Update name if user prop loads late
   useEffect(() => {

@@ -12,8 +12,11 @@ const LandingPage = () => {
   // --- 1. RESPONSIVE STATE ---
   const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
 
-  // Backend URL for images
-  const BACKEND_URL = "http://localhost:5000"; 
+
+
+  const BACKEND_URL = window.location.hostname === 'localhost' 
+    ? "http://localhost:5000" 
+    : "https://veggies-shopping-app.onrender.com"; 
 
   useEffect(() => {
     const handleResize = () => setIsMobile(window.innerWidth < 768);

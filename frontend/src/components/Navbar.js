@@ -12,8 +12,10 @@ const Navbar = ({ user, cartCount, handleLogout }) => {
   const [searchResults, setSearchResults] = useState([]);
   const navigate = useNavigate();
 
-  // 🔴 NEW: Backend URL for images
-  const BACKEND_URL = "http://localhost:5000"; 
+
+const BACKEND_URL = window.location.hostname === 'localhost' 
+  ? "http://localhost:5000" 
+  : "https://veggies-shopping-app.onrender.com";
 
   useEffect(() => {
     const fetchProducts = async () => {

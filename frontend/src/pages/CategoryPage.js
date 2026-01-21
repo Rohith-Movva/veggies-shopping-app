@@ -9,7 +9,10 @@ const CategoryPage = () => {
   const { categoryName } = useParams(); 
   const [loading, setLoading] = useState(true); // 🔴 NEW: Loading State
 
-  const BACKEND_URL = "http://localhost:5000";
+
+  const BACKEND_URL = window.location.hostname === 'localhost' 
+    ? "http://localhost:5000" 
+    : "https://veggies-shopping-app.onrender.com";
 
   useEffect(() => {
     const fetchProducts = async () => {
