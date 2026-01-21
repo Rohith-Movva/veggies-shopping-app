@@ -34,7 +34,8 @@ app.use('/api/auth', authRoutes);
 // 🔴 2. CORRECTED IMAGE SERVING
 // This tells the server: "When someone asks for /images, look inside backend/public/images"
 // NOTE: Make sure your actual folder in VS Code is named 'public' with an 'images' folder inside it!
-app.use('/images', express.static(path.join(__dirname, 'public/images')));
+
+app.use('/images', express.static(path.join(__dirname, 'uploads')));
 
 // Simple Test Route
 app.get('/', (req, res) => {
