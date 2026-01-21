@@ -22,6 +22,7 @@ function App() {
   const [cart, setCart] = useState([]);
 
   // PERSIST LOGIN ON REFRESH
+  // 🔴 FIX: Added 'user' to the dependency array [user]
   useEffect(() => {
     const token = localStorage.getItem('token');
     const storedUser = localStorage.getItem('userInfo'); 
@@ -29,19 +30,19 @@ function App() {
     if (token && storedUser && !user) {
       setUser(JSON.parse(storedUser));
     }
-  }, []); 
+  }, [user]); 
 
   // --- LOGOUT FUNCTION ---
   const handleLogout = () => {
     localStorage.removeItem('token');
     localStorage.removeItem('userInfo'); // Clear userInfo too
-    setCart([user]);
+    setCart([]); // 🔴 FIX: Reset cart to empty array, not [user]
     window.location.href = '/';
   };
 
   // Updated Add to Cart with "Login Check" & "Cart Awareness" Logic
   const addToCart = (product, qty) => {
-    // 🔴 NEW: Check if user is logged in
+    // Check if user is logged in
     if (!user) {
       alert("Please login to add items to your cart.");
       window.location.href = '/login';
@@ -78,8 +79,6 @@ function App() {
     } else {
       setCart([...cart, { ...product, quantity: qty }]);
     }
-    
-    //alert("Added to Cart Successfully!");
   };
 
   const removeFromCart = (productId) => {
@@ -98,32 +97,22 @@ function App() {
 
   return (
     <Router>
-      {/* Show Navbar for logged in users, or if you want public users to see it too, remove the check */}
       <Navbar user={user} cartCount={cart.length} handleLogout={handleLogout} />
-      
       <ScrollToTop />
-
       <div style={{ minHeight: '80vh' }}>
-
         <Routes>
-
-          {/* --- PUBLIC ROUTES (No Login Required) --- */}
+          {/* --- PUBLIC ROUTES --- */}
           <Route path="/" element={<LandingPage />} />
           <Route path="/about" element={<AboutUsPage />} />
-          
-          {/* 🔴 CHANGED: Made Product & Category Public */}
           <Route path="/product/:id" element={<ProductDetails addToCart={addToCart} />} />
           <Route path="/category/:categoryName" element={<CategoryPage addToCart={addToCart} />} />
 
-          {/* Login/Signup only accessible if NOT logged in */}
+          {/* Login/Signup */}
           <Route path="/login" element={!user ? <LoginPage setUser={setUser} /> : <Navigate to="/" />} />
           <Route path="/signup" element={!user ? <SignupPage /> : <Navigate to="/" />} />
 
-
-          {/* --- PRIVATE ROUTES (Login Required) --- */}
-          {/* If they try to go to /shop, redirect to home/landing */}
+          {/* --- PRIVATE ROUTES --- */}
           <Route path="/shop" element={<HomePage />} /> 
-          
           <Route path="/admin" element={user && user.isAdmin ? <AdminPage /> : <Navigate to="/" /> } />
 
           <Route 
@@ -153,7 +142,6 @@ function App() {
 
         </Routes>
       </div>
-
       <Footer />
     </Router>
   );
