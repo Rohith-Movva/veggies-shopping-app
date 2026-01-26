@@ -1,26 +1,34 @@
 import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import { FaHome, FaEye, FaEyeSlash } from 'react-icons/fa'; // Import Eye Icons
+import { FaHome, FaEye, FaEyeSlash } from 'react-icons/fa'; 
 import API from '../api';
 
 const LoginPage = ({ setUser }) => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [showPassword, setShowPassword] = useState(false); // <--- NEW STATE
+  const [showPassword, setShowPassword] = useState(false);
+  const [error, setError] = useState(''); // Added error state for feedback
   const navigate = useNavigate();
 
   const handleLogin = async (e) => {
     e.preventDefault();
     try {
-      //const res = await axios.post('http://localhost:5000/api/auth/login', { email, password });
+      // 1. Send Login Request
       const { data } = await API.post('/auth/login', { email, password });
+      
+      // 2. Save Data
+      // 🔴 UPDATE: Using 'userInfo' to match App.js logic
       localStorage.setItem('token', data.token);
-      localStorage.setItem('user', JSON.stringify(data.user));
+      localStorage.setItem('userInfo', JSON.stringify(data.user)); 
+      
       setUser(data.user);
-      //alert('Login Successful!');
-      navigate('/');
+      
+      // 3. 🔴 REDIRECT: Send to Dashboard (/shop), NOT Landing Page (/)
+      navigate('/shop');
+      
     } catch (err) {
-      alert('Invalid Email or Password');
+      console.error(err);
+      setError('Invalid Email or Password'); // Show error message on screen
     }
   };
 
@@ -33,6 +41,9 @@ const LoginPage = ({ setUser }) => {
       </div>
 
       <h2 style={{ marginBottom: '20px', color: '#2c3e50' }}>Login</h2>
+      
+      {/* Error Message Display */}
+      {error && <p style={{ color: '#e74c3c', marginBottom: '15px', fontWeight: 'bold' }}>{error}</p>}
       
       <form onSubmit={handleLogin}>
         <input 
@@ -47,7 +58,7 @@ const LoginPage = ({ setUser }) => {
         {/* --- PASSWORD FIELD WITH EYE ICON --- */}
         <div style={styles.passwordWrapper}>
           <input 
-            type={showPassword ? "text" : "password"} // Switches between text and dots
+            type={showPassword ? "text" : "password"} 
             placeholder="Password" 
             style={styles.input} 
             value={password} 
@@ -55,7 +66,7 @@ const LoginPage = ({ setUser }) => {
             required 
           />
           <span 
-            onClick={() => setShowPassword(!showPassword)} // Toggles the state
+            onClick={() => setShowPassword(!showPassword)} 
             style={styles.eyeIcon}
           >
             {showPassword ? <FaEyeSlash /> : <FaEye />}
@@ -91,7 +102,6 @@ const styles = {
     fontSize: '14px',
     fontWeight: 'bold'
   },
-  // We need this wrapper to position the icon relative to the input
   passwordWrapper: {
     position: 'relative',
     width: '100%',
@@ -104,12 +114,11 @@ const styles = {
     borderRadius: '5px',
     boxSizing: 'border-box'
   },
-  // Position the eye icon inside the input box on the right
   eyeIcon: {
     position: 'absolute',
     right: '15px',
     top: '50%',
-    transform: 'translateY(-50%)', // Vertically center perfectly
+    transform: 'translateY(-50%)', 
     cursor: 'pointer',
     color: '#7f8c8d',
     fontSize: '18px'

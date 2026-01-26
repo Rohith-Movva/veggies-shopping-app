@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import Navbar from './components/Navbar';
 import Footer from './components/Footer';
 import ScrollToTop from './components/ScrollToTop';
@@ -8,7 +8,7 @@ import ScrollToTop from './components/ScrollToTop';
 import LandingPage from './pages/LandingPage';
 import LoginPage from './pages/LoginPage';
 import SignupPage from './pages/SignupPage';
-import HomePage from './pages/HomePage';
+import ShopPage from './pages/ShopPage'; // This is your Dashboard
 import CategoryPage from './pages/CategoryPage';
 import CartPage from './pages/CartPage';
 import ProductDetails from './pages/ProductDetails';
@@ -17,65 +17,56 @@ import ProfilePage from './pages/ProfilePage';
 import InventoryPage from './pages/InventoryPage';
 import AboutUsPage from './pages/AboutUsPage';
 
-function App() {
+function AppContent() {
   const [user, setUser] = useState(null);
   const [cart, setCart] = useState([]);
+  const location = useLocation(); 
 
-  // PERSIST LOGIN ON REFRESH
-  // 🔴 FIX: Added 'user' to the dependency array [user]
+  // --- 1. NAVBAR VISIBILITY LOGIC ---
+  // We hide the main app navbar on these public pages
+  const hideNavbarPaths = ['/', '/login', '/signup']; 
+  const showNavbar = !hideNavbarPaths.includes(location.pathname);
+
+  // --- 2. AUTH PERSISTENCE ---
   useEffect(() => {
     const token = localStorage.getItem('token');
     const storedUser = localStorage.getItem('userInfo'); 
-    
     if (token && storedUser && !user) {
       setUser(JSON.parse(storedUser));
     }
   }, [user]); 
 
-  // --- LOGOUT FUNCTION ---
+  // --- 3. LOGOUT ---
   const handleLogout = () => {
     localStorage.removeItem('token');
-    localStorage.removeItem('userInfo'); // Clear userInfo too
-    setCart([]); // 🔴 FIX: Reset cart to empty array, not [user]
-    window.location.href = '/';
+    localStorage.removeItem('userInfo'); 
+    setCart([]); 
+    window.location.href = '/'; // Send back to Landing Page
   };
 
-  // Updated Add to Cart with "Login Check" & "Cart Awareness" Logic
+  // --- 4. CART LOGIC ---
   const addToCart = (product, qty) => {
-    // Check if user is logged in
     if (!user) {
       alert("Please login to add items to your cart.");
       window.location.href = '/login';
       return;
     }
-
-    // 1. Check if the item is already in the cart
     const exist = cart.find((x) => x._id === product._id);
-    
-    // 2. Calculate what the TOTAL would be after adding
     const currentQtyInCart = exist ? exist.quantity : 0;
     const totalProposedQty = currentQtyInCart + qty;
     const MAX_LIMIT = 10;
 
-    // 3. Rule 1: Check against Total Inventory
     if (totalProposedQty > product.stock) {
-      alert(`Cannot add more! You already have ${currentQtyInCart} in your cart. Only ${product.stock} available in total.`);
+      alert(`Cannot add more! Only ${product.stock} available in total.`);
       return; 
     }
-
-    // 4. Rule 2: Check against Max Order Limit (10)
     if (totalProposedQty > MAX_LIMIT) {
-      alert(`Limit Exceeded! You have ${currentQtyInCart} in cart. Max allowed is ${MAX_LIMIT} per order.`);
+      alert(`Limit Exceeded! Max allowed is ${MAX_LIMIT} per order.`);
       return; 
     }
 
-    // 5. If checks pass, proceed normally
     if (exist) {
-      setCart(
-        cart.map((x) =>
-          x._id === product._id ? { ...exist, quantity: totalProposedQty } : x
-        )
-      );
+      setCart(cart.map((x) => x._id === product._id ? { ...exist, quantity: totalProposedQty } : x));
     } else {
       setCart([...cart, { ...product, quantity: qty }]);
     }
@@ -96,53 +87,53 @@ function App() {
   };
 
   return (
-    <Router>
-      <Navbar user={user} cartCount={cart.length} handleLogout={handleLogout} />
+    <>
+      {/* Show Navbar only if NOT on Landing/Login/Signup */}
+      {showNavbar && (
+        <Navbar user={user} cartCount={cart.length} handleLogout={handleLogout} />
+      )}
+      
       <ScrollToTop />
+      
       <div style={{ minHeight: '80vh' }}>
         <Routes>
           {/* --- PUBLIC ROUTES --- */}
-          <Route path="/" element={<LandingPage />} />
+          {/* If user is logged in, '/' sends them to '/shop' */}
+          <Route path="/" element={user ? <Navigate to="/shop" /> : <LandingPage />} />
           <Route path="/about" element={<AboutUsPage />} />
+          
+          {/* Login/Signup: Redirect to '/shop' if already logged in */}
+          <Route path="/login" element={!user ? <LoginPage setUser={setUser} /> : <Navigate to="/shop" />} />
+          <Route path="/signup" element={!user ? <SignupPage /> : <Navigate to="/shop" />} />
+
+          {/* --- PRIVATE ROUTES (The Dashboard) --- */}
+          {/* This is the new home for logged in users */}
+          <Route 
+            path="/shop" 
+            element={user ? <ShopPage /> : <Navigate to="/login" />} 
+          /> 
+          
           <Route path="/product/:id" element={<ProductDetails addToCart={addToCart} />} />
           <Route path="/category/:categoryName" element={<CategoryPage addToCart={addToCart} />} />
-
-          {/* Login/Signup */}
-          <Route path="/login" element={!user ? <LoginPage setUser={setUser} /> : <Navigate to="/" />} />
-          <Route path="/signup" element={!user ? <SignupPage /> : <Navigate to="/" />} />
-
-          {/* --- PRIVATE ROUTES --- */}
-          <Route path="/shop" element={<HomePage />} /> 
-          <Route path="/admin" element={user && user.isAdmin ? <AdminPage /> : <Navigate to="/" /> } />
-
-          <Route 
-            path="/cart" 
-            element={
-              user ? 
-              <CartPage 
-                user={user} 
-                cart={cart} 
-                setCart={setCart} 
-                removeFromCart={removeFromCart} 
-                updateQuantity={updateQuantity} 
-              /> 
-              : <Navigate to="/login" />
-            } 
-          />
           
-          <Route 
-            path="/profile" 
-            element={user ? <ProfilePage user={user} /> : <Navigate to="/login" />} 
-          />
-
-          <Route 
-            path="/admin/inventory" 
-            element={user && user.isAdmin ? <InventoryPage /> : <Navigate to="/" />} 
-          />
+          <Route path="/cart" element={user ? <CartPage user={user} cart={cart} setCart={setCart} removeFromCart={removeFromCart} updateQuantity={updateQuantity} /> : <Navigate to="/login" />} />
+          <Route path="/profile" element={user ? <ProfilePage user={user} /> : <Navigate to="/login" />} />
+          
+          {/* Admin Routes */}
+          <Route path="/admin" element={user && user.isAdmin ? <AdminPage /> : <Navigate to="/" /> } />
+          <Route path="/admin/inventory" element={user && user.isAdmin ? <InventoryPage /> : <Navigate to="/" />} />
 
         </Routes>
       </div>
       <Footer />
+    </>
+  );
+}
+
+function App() {
+  return (
+    <Router>
+      <AppContent />
     </Router>
   );
 }

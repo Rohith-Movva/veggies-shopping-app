@@ -1,12 +1,32 @@
+/* --- 1. Global Reset & Box Sizing --- */
+/* This ensures padding/border doesn't increase the width of elements, 
+   which is critical for responsive grids. */
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+/* --- 2. Body Styles --- */
 body {
   margin: 0;
+  padding: 0;
+  width: 100%;
+  
+  /* Prevents horizontal scrolling issues on mobile */
+  overflow-x: hidden; 
+  
+  /* Typography */
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
     'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
     sans-serif;
+    
+  /* Text Rendering Improvements */
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
 
+/* --- 3. Code Snippet Font (Standard React) --- */
 code {
   font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
     monospace;
