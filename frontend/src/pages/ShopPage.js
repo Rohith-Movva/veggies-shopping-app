@@ -95,7 +95,6 @@ const styles = {
   subtitle: {
     fontSize: 'clamp(1rem, 2.5vw, 1.4rem)',
     color: '#ecf0f1', 
-    margin: 0,
     textShadow: '1px 1px 2px rgba(0,0,0,0.5)',
     maxWidth: '600px',
     margin: '0 auto'
