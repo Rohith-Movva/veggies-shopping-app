@@ -24,7 +24,7 @@ function AppContent() {
 
   // --- 1. NAVBAR VISIBILITY LOGIC ---
   // We hide the main app navbar on these public pages
-  const hideNavbarPaths = ['/', '/login', '/signup']; 
+  const hideNavbarPaths = ['/', '/login', '/signup', '/about']; 
   const showNavbar = !hideNavbarPaths.includes(location.pathname);
 
   // --- 2. AUTH PERSISTENCE ---
