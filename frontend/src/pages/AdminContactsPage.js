@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import { FaArrowLeft, FaEnvelopeOpenText, FaUser, FaPhoneAlt, FaCalendarAlt, FaCheckCircle, FaClock } from 'react-icons/fa';
 import API from '../api'; 
 
@@ -7,7 +7,7 @@ const AdminContactsPage = () => {
   const [messages, setMessages] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState('');
-  const navigate = useNavigate();
+  
 
   // 1. Get user token for authorization
   const getUserConfig = () => {
@@ -44,7 +44,7 @@ const AdminContactsPage = () => {
       if (!config) return;
 
       // Call the new PUT API we just made
-      const { data } = await API.put(`/contact/${id}/status`, { status: 'Done' }, config);
+      await API.put(`/contact/${id}/status`, { status: 'Done' }, config);
       
       // Update the UI immediately without refreshing the page
       setMessages((prevMessages) => 
