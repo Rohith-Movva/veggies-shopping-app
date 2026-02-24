@@ -16,6 +16,7 @@ import AdminPage from './pages/AdminPage';
 import ProfilePage from './pages/ProfilePage';
 import InventoryPage from './pages/InventoryPage';
 import AboutUsPage from './pages/AboutUsPage';
+import AllProductsPage from './pages/AllProductsPage';
 
 function AppContent() {
   const [user, setUser] = useState(null);
@@ -101,6 +102,7 @@ function AppContent() {
           {/* If user is logged in, '/' sends them to '/shop' */}
           <Route path="/" element={user ? <Navigate to="/shop" /> : <LandingPage />} />
           <Route path="/about" element={<AboutUsPage />} />
+          <Route path="/all-products" element={<AllProductsPage />} />
           
           {/* Login/Signup: Redirect to '/shop' if already logged in */}
           <Route path="/login" element={!user ? <LoginPage setUser={setUser} /> : <Navigate to="/shop" />} />

@@ -2,50 +2,52 @@ import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { FaLeaf, FaFlask, FaCertificate, FaBan, FaArrowRight, FaBars, FaTimes } from 'react-icons/fa';
 import logo from '../assets/logo.png';
-import farmBg from '../assets/farm-bg.png';
-import API from '../api'; 
+import farmBg1 from '../assets/farm-bg.png';
+import farmBg2 from '../assets/farm-bg-2.png'; 
+import farmBg3 from '../assets/farm-bg-3.png';
 
 const LandingPage = () => {
   const [showContact, setShowContact] = useState(false);
-  const [powders, setPowders] = useState([]);
   const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false); // New state for mobile menu toggle
-
-  const BACKEND_URL = window.location.hostname === 'localhost' 
-    ? "http://localhost:5000" 
-    : "https://veggies-shopping-app.onrender.com"; 
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  
+  // State for the dynamic hero background
+  const [currentBg, setCurrentBg] = useState(0);
+  const heroImages = [farmBg1, farmBg2, farmBg3];
 
   useEffect(() => {
     const handleResize = () => setIsMobile(window.innerWidth < 768);
     window.addEventListener('resize', handleResize);
     
-    const fetchPowders = async () => {
-      try {
-        const { data } = await API.get('/products');
-        // Fallback checks in case data structure differs
-        const productList = Array.isArray(data) ? data : data.products || [];
-        const powderList = productList.filter(p => p.category && p.category.toLowerCase() === 'powders');
-        setPowders(powderList);
-      } catch (err) {
-        console.error("Failed to load products", err);
-      }
+    // Setup interval for changing hero background every 5 seconds
+    const bgInterval = setInterval(() => {
+      setCurrentBg((prev) => (prev + 1) % heroImages.length);
+    }, 5000);
+
+    return () => {
+      window.removeEventListener('resize', handleResize);
+      clearInterval(bgInterval); // Cleanup interval on unmount
     };
-    fetchPowders();
-
-    return () => window.removeEventListener('resize', handleResize);
-  }, []);
-
-  const renderImageSrc = (imgString) => {
-      if (!imgString) return '';
-      if (imgString.startsWith('http')) return imgString;
-      return `${BACKEND_URL}/images/${imgString}`;
-  };
+  }, [heroImages.length]);
 
   const styles = getStyles(isMobile, mobileMenuOpen);
 
   return (
     <div style={styles.container}>
-      
+      {/* Custom CSS for motion effects */}
+      <style>
+        {`
+          @keyframes slowZoom {
+            0% { transform: scale(1); }
+            100% { transform: scale(1.1); }
+          }
+          .hero-cta-btn:hover {
+            transform: translateY(-3px) scale(1.05);
+            box-shadow: 0 6px 20px rgba(230, 126, 34, 0.6) !important;
+          }
+        `}
+      </style>
+
       {/* --- HEADER --- */}
       <header style={styles.header}>
         <div style={styles.headerTopBar}>
@@ -54,7 +56,6 @@ const LandingPage = () => {
               <h1 style={styles.brandName}>Agro Tech Harvest</h1>
             </div>
             
-            {/* Hamburger Icon for Mobile */}
             {isMobile && (
                 <button 
                     onClick={() => setMobileMenuOpen(!mobileMenuOpen)} 
@@ -65,7 +66,6 @@ const LandingPage = () => {
             )}
         </div>
 
-        {/* Navigation - Hidden on mobile unless toggled */}
         <div style={styles.navContainer}>
             <nav style={styles.nav}>
               <Link to="/" style={styles.navLink}>Home</Link>
@@ -80,49 +80,54 @@ const LandingPage = () => {
         </div>
       </header>
 
-      {/* --- HERO SECTION --- */}
-      <div style={styles.hero}>
-        <div style={styles.heroOverlay}>
-            <h1 style={styles.heroTitle}>Pure. Organic. Fresh.</h1>
+      {/* --- HERO SECTION (Dynamic & Motion-Driven) --- */}
+      <div style={styles.heroWrapper}>
+        {heroImages.map((img, index) => (
+          <div 
+            key={index}
+            style={{
+              ...styles.heroBgLayer,
+              backgroundImage: `url(${img})`,
+              opacity: currentBg === index ? 1 : 0,
+              animation: 'slowZoom 8s ease-in-out infinite alternate',
+              zIndex: currentBg === index ? 1 : 0
+            }}
+          />
+        ))}
+        
+        <div style={styles.heroDarkOverlay}></div>
+
+        <div style={styles.heroContent}>
+            <h1 style={styles.heroTitle}>Agro Tech Harvest</h1>
             <p style={styles.heroText}>
-            Experience the finest authentic raw powders, delivered directly from the farm to your doorstep.
+            Dehydrated Raw Powders Company
             </p>
-            <Link to="/signup" style={styles.ctaButton}>Join the Harvest</Link>
+            <Link to="/signup" className="hero-cta-btn" style={styles.ctaButton}>Join the Harvest</Link>
         </div>
       </div>
 
-      {/* --- PRODUCT GRID SECTION --- */}
+      {/* --- CALL TO ACTION TO PRODUCTS --- */}
       <div style={styles.section}>
-        <h2 style={styles.sectionTitle}>
-          ✨ Our Premium Selections
-        </h2>
+        <h2 style={styles.sectionTitle}>✨ Our Premium Selections</h2>
         
-        <div style={styles.productGrid}>
-          {powders.length > 0 ? (
-            powders.map((product) => (
-              <div key={product._id} style={styles.productCard}>
-                <div style={styles.imageWrapper}>
-                    <img 
-                        src={renderImageSrc(product.image)} 
-                        alt={product.name} 
-                        style={styles.productImage} 
-                    />
-                </div>
-                
-                <h3 style={styles.productTitle}>{product.name}</h3>
-                
-                <p style={styles.productDesc}>
-                  {product.description ? product.description.substring(0, 60) : 'Premium organic powder...'}...
-                </p>
-                
-                <div style={styles.productFooter}>
-                  <Link to={`/product/${product._id}`} style={styles.cardBtn}>View Details</Link>
-                </div>
-              </div>
-            ))
-          ) : (
-            <p style={styles.loadingText}>Loading products...</p>
-          )}
+        <div style={{ textAlign: 'center', marginTop: '40px' }}>
+          <Link 
+            to="/all-products" 
+            style={{
+              padding: '12px 30px',
+              backgroundColor: '#27ae60',
+              color: 'white',
+              textDecoration: 'none',
+              borderRadius: '25px',
+              fontWeight: 'bold',
+              fontSize: '1.1rem',
+              display: 'inline-block',
+              boxShadow: '0 4px 10px rgba(39, 174, 96, 0.3)',
+              transition: 'transform 0.2s'
+            }}
+          >
+            Discover our products <FaArrowRight style={{marginLeft: '8px'}}/>
+          </Link>
         </div>
       </div>
 
@@ -195,7 +200,6 @@ const getStyles = (isMobile, mobileMenuOpen) => ({
     backgroundColor: '#fdfdfd'
   },
   
-  // Header - Refactored for better mobile layout
   header: {
     display: 'flex', 
     flexDirection: isMobile ? 'column' : 'row', 
@@ -205,7 +209,7 @@ const getStyles = (isMobile, mobileMenuOpen) => ({
     minHeight: '70px', 
     backgroundColor: 'white', 
     boxShadow: '0 2px 10px rgba(0,0,0,0.05)', 
-    position: 'sticky', // Makes header stay at top
+    position: 'sticky', 
     top: 0,
     zIndex: 1000,
   },
@@ -219,7 +223,6 @@ const getStyles = (isMobile, mobileMenuOpen) => ({
   brandName: { color: '#2c3e50', margin: 0, fontSize: isMobile ? '18px' : '24px', fontWeight: '700' },
   hamburgerBtn: { background: 'none', border: 'none', fontSize: '24px', color: '#2c3e50', cursor: 'pointer' },
   
-  // Navigation Container - Handles Mobile Toggle
   navContainer: {
     display: isMobile ? (mobileMenuOpen ? 'flex' : 'none') : 'flex',
     flexDirection: isMobile ? 'column' : 'row',
@@ -249,17 +252,42 @@ const getStyles = (isMobile, mobileMenuOpen) => ({
   loginBtn: { marginRight: isMobile ? '0' : '20px', textDecoration: 'none', color: '#2c3e50', fontWeight: 'bold' },
   signupBtn: { padding: '10px 25px', backgroundColor: '#27ae60', color: 'white', textDecoration: 'none', borderRadius: '25px', fontWeight: 'bold', width: isMobile ? '100%' : 'auto', textAlign: 'center' },
   
-  // Hero
-  hero: { 
-      textAlign: 'center', 
-      backgroundImage: `linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.5)), url(${farmBg})`,
-      backgroundSize: 'cover',
-      backgroundPosition: 'center',
-      color: 'white',
-      padding: isMobile ? '100px 20px' : '140px 20px', 
-      display: 'flex',
-      justifyContent: 'center',
-      alignItems: 'center'
+  heroWrapper: {
+    position: 'relative',
+    width: '100%',
+    minHeight: isMobile ? '400px' : '500px',
+    display: 'flex',
+    justifyContent: 'center',
+    alignItems: 'center',
+    overflow: 'hidden', 
+    backgroundColor: '#111', 
+  },
+  heroBgLayer: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    width: '100%',
+    height: '100%',
+    backgroundSize: 'cover',
+    backgroundPosition: 'center',
+    transition: 'opacity 2s ease-in-out', 
+    zIndex: 1,
+  },
+  heroDarkOverlay: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    width: '100%',
+    height: '100%',
+    backgroundColor: 'rgba(0, 0, 0, 0.55)', 
+    zIndex: 2,
+  },
+  heroContent: {
+    position: 'relative',
+    zIndex: 3, 
+    textAlign: 'center',
+    color: 'white',
+    padding: isMobile ? '0 20px' : '0 40px',
   },
   heroTitle: { 
       fontSize: isMobile ? '2.5rem' : '4rem', 
@@ -284,10 +312,9 @@ const getStyles = (isMobile, mobileMenuOpen) => ({
       fontWeight: 'bold', 
       display: 'inline-block',
       boxShadow: '0 4px 15px rgba(230, 126, 34, 0.4)',
-      transition: 'transform 0.2s'
+      transition: 'all 0.3s ease-in-out', 
   },
 
-  // Section Generic
   section: {
     padding: isMobile ? '40px 15px' : '60px 20px',
     maxWidth: '1200px',
@@ -301,58 +328,6 @@ const getStyles = (isMobile, mobileMenuOpen) => ({
       fontSize: isMobile ? '1.8rem' : '2.2rem'
   },
   
-  // Smart Grid System
-  productGrid: {
-    display: 'grid',
-    // Auto-fit creates as many columns as fit with min-width 280px.
-    // This handles Mobile (1 col), Tablet (2 cols), Desktop (3+ cols) automatically.
-    gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', 
-    gap: '25px', 
-    width: '100%',
-    boxSizing: 'border-box'
-  },
-  productCard: {
-    border: '1px solid #eaeaea',
-    borderRadius: '12px',
-    padding: '15px',
-    boxShadow: '0 5px 15px rgba(0,0,0,0.05)', 
-    backgroundColor: 'white',
-    display: 'flex',
-    flexDirection: 'column',
-    transition: 'transform 0.2s',
-    height: '100%'
-  },
-  imageWrapper: {
-      width: '100%',
-      height: '220px',
-      marginBottom: '15px',
-      overflow: 'hidden',
-      borderRadius: '8px',
-  },
-  productImage: {
-    width: '100%',
-    height: '100%',
-    objectFit: 'cover', 
-    transition: 'transform 0.3s'
-  },
-  productTitle: { fontSize: '1.2rem', color: '#2c3e50', margin: '0 0 8px 0', fontWeight: '700' },
-  productDesc: { fontSize: '0.95rem', color: '#666', marginBottom: '20px', flexGrow: 1, lineHeight: '1.5' }, 
-  productFooter: { marginTop: 'auto' },
-  cardBtn: { 
-    display: 'block',
-    width: '100%',
-    padding: '12px 0', 
-    backgroundColor: '#3498db', 
-    color: 'white', 
-    textDecoration: 'none', 
-    borderRadius: '8px', 
-    fontSize: '1rem', 
-    fontWeight: '600',
-    textAlign: 'center' 
-  },
-  loadingText: { textAlign: 'center', width: '100%', gridColumn: '1 / -1', padding: '20px', color: '#777' },
-
-  // Trust Section
   trustSection: {
     backgroundColor: '#f8f9fa',
     padding: isMobile ? '50px 20px' : '70px 20px',
@@ -367,7 +342,7 @@ const getStyles = (isMobile, mobileMenuOpen) => ({
     margin: '0 auto'
   },
   trustBadge: {
-    flex: '1 1 150px', // Allow badges to shrink/grow but default to 150px
+    flex: '1 1 150px',
     display: 'flex',
     flexDirection: 'column',
     alignItems: 'center',
@@ -386,7 +361,6 @@ const getStyles = (isMobile, mobileMenuOpen) => ({
     boxShadow: '0 5px 15px rgba(0,0,0,0.05)',
   },
 
-  // Story Section
   storySection: {
     backgroundColor: '#2c3e50',
     color: 'white',
@@ -408,7 +382,6 @@ const getStyles = (isMobile, mobileMenuOpen) => ({
     backgroundColor: 'transparent'
   },
 
-  // Modal
   modalOverlay: { position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: 'rgba(0,0,0,0.6)', display: 'flex', justifyContent: 'center', alignItems: 'center', zIndex: 2000, padding: '15px' },
   modalContent: { backgroundColor: 'white', padding: isMobile ? '30px 20px' : '40px', borderRadius: '15px', position: 'relative', width: '100%', maxWidth: '400px', textAlign: 'center', boxShadow: '0 10px 30px rgba(0,0,0,0.2)' },
   closeBtn: { position: 'absolute', top: '10px', right: '15px', background: 'none', border: 'none', fontSize: '28px', cursor: 'pointer', color: '#aaa' },
