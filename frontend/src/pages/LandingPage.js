@@ -1,35 +1,89 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { FaLeaf, FaFlask, FaCertificate, FaBan, FaArrowRight, FaBars, FaTimes } from 'react-icons/fa';
+import { 
+  FaLeaf, FaFlask, FaCertificate, FaBan, FaArrowRight, 
+  FaBars, FaTimes, FaChevronLeft, FaChevronRight 
+} from 'react-icons/fa';
 import logo from '../assets/logo.png';
 import farmBg1 from '../assets/farm-bg.png';
 import farmBg2 from '../assets/farm-bg-2.png'; 
 import farmBg3 from '../assets/farm-bg-3.png';
+import API from '../api'; // Brought back to fetch products for the carousel
 
 const LandingPage = () => {
   const [showContact, setShowContact] = useState(false);
   const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   
-  // State for the dynamic hero background
+  // States for Hero Background
   const [currentBg, setCurrentBg] = useState(0);
   const heroImages = [farmBg1, farmBg2, farmBg3];
+
+  // States for Product Carousel
+  const [products, setProducts] = useState([]);
+  const [currentIndex, setCurrentIndex] = useState(0);
+  const [isLoading, setIsLoading] = useState(true);
+
+  const BACKEND_URL = window.location.hostname === 'localhost' 
+    ? "http://localhost:5000" 
+    : "https://veggies-shopping-app.onrender.com";
 
   useEffect(() => {
     const handleResize = () => setIsMobile(window.innerWidth < 768);
     window.addEventListener('resize', handleResize);
     
-    // Setup interval for changing hero background every 5 seconds
+    // Fetch Products for the new Carousel
+    const fetchProducts = async () => {
+      try {
+        const { data } = await API.get('/products');
+        const productList = Array.isArray(data) ? data : data.products || [];
+        const powderList = productList.filter(p => p.category && p.category.toLowerCase() === 'powders');
+        setProducts(powderList);
+        setIsLoading(false);
+      } catch (err) {
+        console.error("Failed to load products", err);
+        setIsLoading(false);
+      }
+    };
+    fetchProducts();
+    
+    // Setup interval for changing hero background
     const bgInterval = setInterval(() => {
       setCurrentBg((prev) => (prev + 1) % heroImages.length);
     }, 5000);
 
     return () => {
       window.removeEventListener('resize', handleResize);
-      clearInterval(bgInterval); // Cleanup interval on unmount
+      clearInterval(bgInterval); 
     };
   }, [heroImages.length]);
 
+  const renderImageSrc = (imgString) => {
+      if (!imgString) return '';
+      if (imgString.startsWith('http')) return imgString;
+      return `${BACKEND_URL}/images/${imgString}`;
+  };
+
+  // --- Carousel Navigation Logic ---
+  const itemsToShow = isMobile ? 1 : 3;
+  
+  const nextSlide = () => {
+    if (currentIndex + itemsToShow < products.length) {
+      setCurrentIndex(currentIndex + 1);
+    } else {
+      setCurrentIndex(0); // Loop back to start
+    }
+  };
+
+  const prevSlide = () => {
+    if (currentIndex > 0) {
+      setCurrentIndex(currentIndex - 1);
+    } else {
+      setCurrentIndex(Math.max(0, products.length - itemsToShow)); // Loop to end
+    }
+  };
+
+  const visibleProducts = products.slice(currentIndex, currentIndex + itemsToShow);
   const styles = getStyles(isMobile, mobileMenuOpen);
 
   return (
@@ -44,6 +98,18 @@ const LandingPage = () => {
           .hero-cta-btn:hover {
             transform: translateY(-3px) scale(1.05);
             box-shadow: 0 6px 20px rgba(230, 126, 34, 0.6) !important;
+          }
+          .carousel-arrow:hover {
+            background-color: #27ae60 !important;
+            color: white !important;
+            transform: scale(1.1);
+          }
+          .overlapping-card:hover .image-tile img {
+            transform: scale(1.08);
+          }
+          .overlapping-card:hover .desc-tile {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 35px rgba(0,0,0,0.15) !important;
           }
         `}
       </style>
@@ -72,11 +138,6 @@ const LandingPage = () => {
               <Link to="/about" style={styles.navLink}>About Us</Link>
               <Link to="/all-products" style={styles.navLink}>Shop</Link>
               <Link to="/contact" style={styles.navLink}>Contact Us</Link>
-              {/* <button onClick={() => setShowContact(true)} style={styles.navBtn}>Contact Us</button> */}
-
-              
-              
-
             </nav>
 
             <div style={styles.authContainer}>
@@ -112,11 +173,65 @@ const LandingPage = () => {
         </div>
       </div>
 
-      {/* --- CALL TO ACTION TO PRODUCTS --- */}
+      {/* --- OVERLAPPING PRODUCT CAROUSEL SECTION --- */}
       <div style={styles.section}>
         <h2 style={styles.sectionTitle}>✨ Our Premium Selections</h2>
+
         
-        <div style={{ textAlign: 'center', marginTop: '40px' }}>
+        
+        {isLoading ? (
+          <p style={{ textAlign: 'center', color: '#777' }}>Loading our fresh harvest...</p>
+        ) : products.length > 0 ? (
+          <div style={styles.carouselContainer}>
+            
+            {/* Left Arrow */}
+            {products.length > itemsToShow && (
+              <button onClick={prevSlide} className="carousel-arrow" style={{...styles.arrowBtn, left: isMobile ? '-10px' : '-20px'}}>
+                <FaChevronLeft />
+              </button>
+            )}
+
+            {/* Product Track */}
+            <div style={styles.carouselTrack}>
+              {visibleProducts.map((product) => (
+                <div key={product._id} className="overlapping-card" style={styles.overlappingCard}>
+                  
+                  {/* The Back Image Tile */}
+                  <div className="image-tile" style={styles.imageTile}>
+                    <img 
+                      src={renderImageSrc(product.image)} 
+                      alt={product.name} 
+                      style={styles.imageTileImg} 
+                    />
+                  </div>
+
+                  {/* The Overlapping Description Tile (Front) */}
+                  <div className="desc-tile" style={styles.descTile}>
+                    <h3 style={styles.descTitle}>{product.name}</h3>
+                    <p style={styles.descText}>
+                      {product.description ? product.description.substring(0, 50) : 'Premium organic powder...'}...
+                    </p>
+                    <Link to={`/product/${product._id}`} style={styles.tileBtn}>
+                      View Details
+                    </Link>
+                  </div>
+
+                </div>
+              ))}
+            </div>
+
+            {/* Right Arrow */}
+            {products.length > itemsToShow && (
+              <button onClick={nextSlide} className="carousel-arrow" style={{...styles.arrowBtn, right: isMobile ? '-10px' : '-20px'}}>
+                <FaChevronRight />
+              </button>
+            )}
+          </div>
+        ) : (
+          <p style={{ textAlign: 'center', color: '#777' }}>No products found at the moment.</p>
+        )}
+
+        <div style={{ textAlign: 'center', marginTop: '60px' }}>
           <Link 
             to="/all-products" 
             style={{
@@ -175,7 +290,7 @@ const LandingPage = () => {
           </Link>
       </div>
 
-      {/* --- CONTACT MODAL --- */}
+      {/* --- CONTACT MODAL (Kept just in case) --- */}
       {showContact && (
         <div style={styles.modalOverlay}>
             <div style={styles.modalContent}>
@@ -254,7 +369,6 @@ const getStyles = (isMobile, mobileMenuOpen) => ({
     width: isMobile ? '100%' : 'auto'
   },
   navLink: { textDecoration: 'none', color: '#2c3e50', fontWeight: '500', fontSize: '16px', cursor: 'pointer', transition: 'color 0.2s' },
-  navBtn: { background: 'none', border: 'none', color: '#2c3e50', fontWeight: '500', fontSize: '16px', cursor: 'pointer', fontFamily: 'inherit' },
   loginBtn: { marginRight: isMobile ? '0' : '20px', textDecoration: 'none', color: '#2c3e50', fontWeight: 'bold' },
   signupBtn: { padding: '10px 25px', backgroundColor: '#27ae60', color: 'white', textDecoration: 'none', borderRadius: '25px', fontWeight: 'bold', width: isMobile ? '100%' : 'auto', textAlign: 'center' },
   
@@ -330,9 +444,111 @@ const getStyles = (isMobile, mobileMenuOpen) => ({
   sectionTitle: {
       textAlign: 'center', 
       color: '#2c3e50', 
-      marginBottom: '40px',
+      marginBottom: '50px',
       fontSize: isMobile ? '1.8rem' : '2.2rem'
   },
+
+  // --- NEW CAROUSEL & TILE STYLES ---
+  carouselContainer: {
+    position: 'relative',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    width: '100%',
+    padding: '0 20px'
+  },
+  carouselTrack: {
+    display: 'grid',
+    gridTemplateColumns: isMobile ? '1fr' : 'repeat(3, 1fr)',
+    gap: '30px',
+    width: '100%',
+    maxWidth: '1000px',
+  },
+  arrowBtn: {
+    position: 'absolute',
+    top: '50%',
+    transform: 'translateY(-50%)',
+    width: '45px',
+    height: '45px',
+    borderRadius: '50%',
+    backgroundColor: 'white',
+    color: '#2c3e50',
+    border: 'none',
+    boxShadow: '0 5px 15px rgba(0,0,0,0.15)',
+    display: 'flex',
+    justifyContent: 'center',
+    alignItems: 'center',
+    fontSize: '18px',
+    cursor: 'pointer',
+    zIndex: 10,
+    transition: 'all 0.3s ease'
+  },
+  
+  // The Overlapping Tile Magic
+  overlappingCard: {
+    position: 'relative',
+    height: '420px', // Total height of the space
+    width: '100%',
+    display: 'flex',
+    flexDirection: 'column',
+    alignItems: 'center',
+  },
+  imageTile: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    width: '100%',
+    height: '80%', // Takes up top 80%
+    borderRadius: '16px',
+    overflow: 'hidden',
+    boxShadow: '0 8px 25px rgba(0,0,0,0.1)',
+    zIndex: 1
+  },
+  imageTileImg: {
+    width: '100%',
+    height: '100%',
+    objectFit: 'cover',
+    transition: 'transform 0.5s ease', // Zoom effect on hover
+  },
+  descTile: {
+    position: 'absolute',
+    bottom: 0, // Sticks to the very bottom, overlapping the image
+    width: '85%', // Slightly narrower than the image
+    backgroundColor: 'white',
+    borderRadius: '12px',
+    padding: '20px 15px',
+    boxShadow: '0 10px 25px rgba(0,0,0,0.1)',
+    zIndex: 2, // Sits on top of the image
+    textAlign: 'center',
+    display: 'flex',
+    flexDirection: 'column',
+    alignItems: 'center',
+    transition: 'all 0.3s ease' // Lift effect on hover
+  },
+  descTitle: {
+    margin: '0 0 8px 0',
+    color: '#2c3e50',
+    fontSize: '1.2rem',
+    fontWeight: 'bold'
+  },
+  descText: {
+    margin: '0 0 15px 0',
+    color: '#666',
+    fontSize: '0.9rem',
+    lineHeight: '1.4'
+  },
+  tileBtn: {
+    display: 'inline-block',
+    padding: '8px 20px',
+    backgroundColor: '#e67e22',
+    color: 'white',
+    textDecoration: 'none',
+    borderRadius: '20px',
+    fontSize: '0.9rem',
+    fontWeight: 'bold',
+    transition: 'background-color 0.2s'
+  },
+  // -----------------------------------
   
   trustSection: {
     backgroundColor: '#f8f9fa',
