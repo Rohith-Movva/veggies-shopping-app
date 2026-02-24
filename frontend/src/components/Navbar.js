@@ -148,6 +148,7 @@ const Navbar = ({ user, cartCount, handleLogout }) => {
             <div className="dropdown-menu">
               <Link to="/admin" onClick={handleLinkClick}>Dashboard</Link>
               <Link to="/admin/inventory" onClick={handleLinkClick}>Inventory</Link>
+              <Link to="/admin/contacts" onClick={handleLinkClick}>Contact Us</Link>
             </div>
           </div>
         )}

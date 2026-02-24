@@ -70,7 +70,13 @@ const LandingPage = () => {
             <nav style={styles.nav}>
               <Link to="/" style={styles.navLink}>Home</Link>
               <Link to="/about" style={styles.navLink}>About Us</Link>
-              <button onClick={() => setShowContact(true)} style={styles.navBtn}>Contact Us</button>
+              <Link to="/all-products" style={styles.navLink}>Shop</Link>
+              <Link to="/contact" style={styles.navLink}>Contact Us</Link>
+              {/* <button onClick={() => setShowContact(true)} style={styles.navBtn}>Contact Us</button> */}
+
+              
+              
+
             </nav>
 
             <div style={styles.authContainer}>
@@ -196,7 +202,7 @@ const getStyles = (isMobile, mobileMenuOpen) => ({
   container: { 
     fontFamily: "'Segoe UI', Tahoma, Geneva, Verdana, sans-serif", 
     width: '100%', 
-    overflowX: 'hidden',
+    overflowX: 'clip',
     backgroundColor: '#fdfdfd'
   },
   
