@@ -64,7 +64,7 @@ const LandingPage = () => {
       lenis.destroy(); 
       clearInterval(bgInterval);
     };
-  }, []);
+  }, [heroImages.length]);
 
   useGSAP(() => {
     if (isLoading) return;

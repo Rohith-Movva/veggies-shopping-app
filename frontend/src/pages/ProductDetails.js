@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { FaArrowLeft, FaPlus, FaMinus, FaUtensils, FaIndustry } from 'react-icons/fa';
+import { FaIndustry, FaUtensils, FaArrowLeft } from 'react-icons/fa';
 import Lenis from 'lenis';
 import gsap from 'gsap';
 import { useGSAP } from '@gsap/react';

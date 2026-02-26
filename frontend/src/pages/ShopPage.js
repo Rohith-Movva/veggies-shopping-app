@@ -1,6 +1,5 @@
 import React, { useRef } from 'react';
 import { Link } from 'react-router-dom';
-import logo from '../assets/logo.png'; 
 import farmBg from '../assets/farm-bg.png'; // Make sure your powder/farm bg is here
 import gsap from 'gsap';
 import { useGSAP } from '@gsap/react';

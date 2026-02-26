@@ -1,9 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
-import { 
-  FaArrowLeft, FaPaperPlane, FaCheckCircle, FaExclamationCircle, 
-  FaPhoneAlt, FaEnvelope, FaMapMarkerAlt 
-} from 'react-icons/fa';
+import { FaArrowLeft, FaPaperPlane, FaCheckCircle, FaExclamationCircle, FaPhoneAlt, FaEnvelope } from 'react-icons/fa';
 import Lenis from 'lenis';
 import gsap from 'gsap';
 import { useGSAP } from '@gsap/react';
