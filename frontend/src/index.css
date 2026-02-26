@@ -1,33 +1,96 @@
-/* --- 1. Global Reset & Box Sizing --- */
-/* This ensures padding/border doesn't increase the width of elements, 
-   which is critical for responsive grids. */
+/* --- 1. Global Reset & Box Sizing (KEEP THIS) --- */
 *, *::before, *::after {
   box-sizing: border-box;
   margin: 0;
   padding: 0;
 }
 
-/* --- 2. Body Styles --- */
+/* --- 2. Body Styles (UPDATED) --- */
 body {
   margin: 0;
   padding: 0;
   width: 100%;
-  
-  /* Prevents horizontal scrolling issues on mobile */
   overflow-x: hidden; 
-  
-  /* Typography */
+  background-color: #fff;
+  color: #000;
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
-    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
-    sans-serif;
-    
-  /* Text Rendering Improvements */
+    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
 
-/* --- 3. Code Snippet Font (Standard React) --- */
-code {
-  font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
-    monospace;
+/* --- 3. HEAVY UI RESPONSIVE PATCH --- */
+
+/* This prevents the "White Space" on the right side of mobile screens */
+html, body {
+  position: relative;
+  max-width: 100%;
+}
+
+/* The Magic Clamp: 
+   This makes your H1 text scale perfectly between 2.5rem (mobile) 
+   and 6rem (desktop) without writing 100 media queries.
+*/
+h1 {
+  font-size: clamp(2.5rem, 8vw, 6rem);
+  line-height: 0.9;
+  font-weight: 900;
+  letter-spacing: -0.04em;
+}
+
+h2 {
+  font-size: clamp(1.8rem, 5vw, 3.5rem);
+  line-height: 1.1;
+}
+
+/* --- 4. GLOBAL MOBILE OVERRIDES (Max-width 768px) --- */
+@media (max-width: 768px) {
+  
+  /* Reduce padding so content doesn't feel squashed */
+  section, .container {
+    padding-left: 20px !important;
+    padding-right: 20px !important;
+  }
+
+  /* Adjust top padding for the fixed navbar */
+  .page-top-padding {
+    padding-top: 100px !important;
+  }
+
+  /* Force all Side-by-Side grids to stack */
+  .grid-container, 
+  [style*="display: grid"], 
+  [style*="display: flex"] {
+    grid-template-columns: 1fr !important;
+    flex-direction: column !important;
+  }
+
+  /* Shrink images that might be too tall for mobile viewports */
+  img {
+    max-width: 100%;
+    height: auto !important;
+  }
+
+  /* Hide specific GSAP elements if they cause layout shifts on small screens */
+  .magnetic {
+    transform: none !important;
+  }
+}
+
+/* --- 5. SMOOTH SCROLLING FIX --- */
+/* Ensures Lenis.js works better with the browser's native behavior */
+html.lenis {
+  height: auto;
+}
+
+.lenis.lenis-smooth {
+  scroll-behavior: auto;
+}
+
+.lenis.lenis-smooth [data-lenis-prevent] {
+  overscroll-behavior: contain;
+}
+
+.lenis.lenis-stopped {
+  overflow: hidden;
 }

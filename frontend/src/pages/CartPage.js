@@ -188,7 +188,6 @@ const styles = {
   subTitle: { letterSpacing: '4px', fontSize: '0.7rem', color: '#aaa', fontWeight: '900', marginTop: '20px' },
   
   layout: { maxWidth: '1300px', margin: '0 auto', display: 'flex', gap: '60px', padding: '0 40px', flexWrap: 'wrap' },
-  
   itemsColumn: { flex: 1.5, minWidth: '450px', display: 'flex', flexDirection: 'column', gap: '30px' },
   cartItem: { display: 'flex', gap: '30px', borderBottom: '1px solid #eee', paddingBottom: '30px', alignItems: 'center' },
   imgBox: { width: '150px', height: '150px', borderRadius: '25px', overflow: 'hidden', background: '#f9f9f9' },

@@ -160,14 +160,16 @@ const styles = {
   backBtn: { background: 'none', border: 'none', fontWeight: '900', fontSize: '0.7rem', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '10px', color: '#1b4332' },
   
   // FIXED GRID SYSTEM (Prevents content dropping down)
+
   grid: { 
-    maxWidth: '1300px', 
-    margin: '0 auto', 
-    display: 'grid', 
-    gridTemplateColumns: '1fr 1fr', // Force 50/50 split
-    gap: '80px', 
-    padding: '0 40px',
-    alignItems: 'start'
+  maxWidth: '1300px', 
+  margin: '0 auto', 
+  display: 'grid', 
+  // This line is the magic: it stays 1 col on mobile, 2 on desktop
+  gridTemplateColumns: window.innerWidth < 900 ? '1fr' : '1fr 1fr', 
+  gap: window.innerWidth < 900 ? '30px' : '80px', 
+  padding: window.innerWidth < 900 ? '0 20px' : '0 40px',
+  alignItems: 'start'
   },
 
   leftCol: { width: '100%' },

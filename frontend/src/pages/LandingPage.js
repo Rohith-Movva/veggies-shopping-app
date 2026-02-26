@@ -181,9 +181,9 @@ const LandingPage = () => {
         ))}
         <div style={styles.heroOverlay} />
         <div style={styles.heroContent}>
-          <div className="mask"><h1 className="char" style={styles.bigTitle}>NATURE'S</h1></div><br/>
-          <div className="mask"><h1 className="char" style={styles.bigTitle}>FINEST</h1></div>
-          <p style={styles.heroSubText}>DEHYDRATED RAW POWDERS FOR A BETTER LIFE</p>
+          <div className="mask"><h4 className="char" style={styles.bigTitle}>Agro Tech Harvest</h4></div><br/>
+          
+          <p style={styles.heroSubText}>DEHYDRATED RAW POWDERS COMPANY</p>
           <div style={{ marginTop: '40px' }}>
             <Link to="/all-products" className="magnetic" style={styles.heroCta}>Explore Shop <FaArrowRight /></Link>
           </div>
@@ -289,6 +289,7 @@ const styles = {
   viewBtn: { color: '#27ae60', textDecoration: 'none', fontWeight: 'bold', borderBottom: '2px solid' },
 
   trustSection: { padding: '60px 20px', display: 'flex', flexWrap: 'wrap', justifyContent: 'center', gap: '40px 80px', background: '#fff' }, // Significantly reduced padding & gaps
+  
   trustBox: { textAlign: 'center', color: '#000', flex: '0 1 180px' },
   iconCircle: { width: '80px', height: '80px', background: '#f0fdf4', borderRadius: '50%', display: 'flex', justifyContent: 'center', alignItems: 'center', fontSize: '2rem', color: '#27ae60', marginBottom: '15px', margin: '0 auto' }, // Smaller icons
   trustTitle: { fontSize: '0.9rem', letterSpacing: '1px', fontWeight: 'bold' },
