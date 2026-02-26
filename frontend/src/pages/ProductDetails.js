@@ -1,190 +1,151 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { FaCheckCircle, FaLeaf, FaExclamationTriangle, FaIndustry, FaUtensils, FaInfoCircle } from 'react-icons/fa'; // 🔴 NEW ICONS
+import { FaArrowLeft, FaPlus, FaMinus, FaUtensils, FaIndustry } from 'react-icons/fa';
+import Lenis from 'lenis';
+import gsap from 'gsap';
+import { useGSAP } from '@gsap/react';
+import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import API from '../api';
+
+gsap.registerPlugin(ScrollTrigger);
 
 const ProductDetails = ({ addToCart }) => {
   const { id } = useParams();
   const navigate = useNavigate();
   const [product, setProduct] = useState(null);
   const [quantity, setQuantity] = useState(1);
+  const [isLoading, setIsLoading] = useState(true);
 
+  const mainRef = useRef(null);
 
   const BACKEND_URL = window.location.hostname === 'localhost' 
     ? "http://localhost:5000" 
-    : "https://veggies-shopping-app.onrender.com"; 
+    : "https://veggies-shopping-app.onrender.com";
 
   useEffect(() => {
+    const lenis = new Lenis({ lerp: 0.1 });
+    function raf(time) { lenis.raf(time); requestAnimationFrame(raf); }
+    requestAnimationFrame(raf);
+
     const fetchProduct = async () => {
       try {
         const res = await API.get('/products');
-        const foundProduct = res.data.find(p => p._id === id);
-        setProduct(foundProduct);
+        const list = Array.isArray(res.data) ? res.data : res.data.products || [];
+        const found = list.find(p => p._id === id);
+        if (found) setProduct(found);
+        setIsLoading(false);
       } catch (err) {
         console.error(err);
+        setIsLoading(false);
       }
     };
     fetchProduct();
+    return () => lenis.destroy();
   }, [id]);
 
-  const renderImageSrc = (imgString) => {
-      if (!imgString) return '';
-      if (imgString.startsWith('http')) return imgString;
-      return `${BACKEND_URL}/images/${imgString}`;
-  };
+  useGSAP(() => {
+    if (isLoading || !product) return;
 
-  // 🔴 NEW: FANCY LIST HELPER (Green Checkmarks)
-  const formatList = (text) => {
-    if (!text) return null;
-    return text.split('\n').map((item, index) => (
-      <li key={index} style={styles.benefitItem}>
-        <FaCheckCircle style={{ color: '#27ae60', marginRight: '10px', flexShrink: 0 }} />
-        <span>{item}</span>
-      </li>
-    ));
-  };
+    const ctx = gsap.context(() => {
+      // Set initial states to prevent flickering
+      gsap.set(".reveal-item", { opacity: 0, y: 30 });
 
-  // 🔴 NEW: BADGE HELPER (For Highlights)
-  const formatBadges = (text) => {
-    if (!text) return null;
-    return text.split('\n').map((item, index) => (
-      <span key={index} style={styles.badge}>
-         ✨ {item}
-      </span>
-    ));
-  };
+      gsap.to(".reveal-item", {
+        opacity: 1,
+        y: 0,
+        duration: 1,
+        stagger: 0.15,
+        ease: "power4.out",
+        clearProps: "transform", // ONLY clear transform, keep opacity: 1
+        onComplete: () => {
+          ScrollTrigger.refresh();
+        }
+      });
+    }, mainRef);
 
-  if (!product) return <div style={styles.loading}>Loading product details...</div>;
+    return () => ctx.revert(); 
+  }, [isLoading, product]);
 
-  // --- LOGIC ---
-  const MAX_PER_ORDER = 10; 
+  if (isLoading) return <div style={styles.loader}>LOADING...</div>;
+  if (!product) return <div style={styles.loader}>PRODUCT NOT FOUND</div>;
+
   const isOutOfStock = product.stock === 0;
-  const isLowStock = product.stock > 0 && product.stock <= 5;
-  const effectiveLimit = Math.min(product.stock, MAX_PER_ORDER);
+  const imageSrc = product.image?.startsWith('http') ? product.image : `${BACKEND_URL}/images/${product.image}`;
 
   return (
-    <div style={styles.container}>
-      
-      {/* --- LEFT: IMAGE SECTION --- */}
-      <div style={styles.imageSection}>
-        <img 
-          src={renderImageSrc(product.image)} 
-          alt={product.name} 
-          style={styles.image} 
-        />
-      </div>
-
-      {/* --- RIGHT: DETAILS SECTION --- */}
-      <div style={styles.details}>
+    <div ref={mainRef} style={styles.page}>
+      <style>{`
+        .qty-btn:hover { background: #2d6a4f !important; color: white !important; }
+        .main-btn:hover { transform: translateY(-3px); box-shadow: 0 10px 20px rgba(27, 67, 50, 0.2); }
         
-        {/* 1. HEADER & HIGHLIGHTS */}
-        <h1 style={styles.title}>{product.name}</h1>
-        <p style={styles.categoryTag}>{product.category}</p>
+        /* Responsive Fix: Only stack on small mobile screens */
+        @media (max-width: 900px) {
+          .grid-container { grid-template-columns: 1fr !important; gap: 40px !important; }
+          .img-wrapper-heavy { height: 400px !important; }
+        }
+      `}</style>
 
-        {/* 🔴 NEW: Highlights as Badges */}
-        {product.highlights && (
-           <div style={styles.badgeContainer}>
-             {formatBadges(product.highlights)}
-           </div>
-        )}
+      <nav style={styles.nav}>
+        <button onClick={() => navigate(-1)} style={styles.backBtn}>
+          <FaArrowLeft /> BACK TO SHOP
+        </button>
+      </nav>
+
+      {/* CHANGED TO GRID SYSTEM FOR STABILITY */}
+      <div className="grid-container" style={styles.grid}>
         
-        {/* 2. PRICE & STOCK CARD */}
-        <div style={styles.priceCard}>
-            <div style={{display:'flex', alignItems:'center', gap:'15px'}}>
-               <h2 style={styles.price}>₹{product.price}</h2>
-               <span style={styles.taxNote}>(Inclusive of all taxes)</span>
-            </div>
-
-            <div style={{ marginTop: '5px' }}>
-              {isOutOfStock ? (
-                <span style={styles.stockBadgeOut}>Out of Stock</span>
-              ) : (
-                <span style={styles.stockBadgeIn}>In Stock {isLowStock && `(Only ${product.stock} left!)`}</span>
-              )}
-            </div>
-        </div>
-
-        {/* 3. ABOUT (Clean Text) */}
-        <div style={styles.sectionBlock}>
-          <h3 style={styles.sectionTitle}><FaInfoCircle /> About This Product</h3>
-          <p style={styles.text}>{product.description}</p>
-          {product.about && <p style={{...styles.text, marginTop:'10px'}}>{product.about}</p>}
-        </div>
-
-        {/* 4. KEY BENEFITS (Fancy Checkmark List) */}
-        {product.keyBenefits && (
-          <div style={styles.sectionBlock}>
-            <h3 style={styles.sectionTitle}><FaLeaf /> Key Benefits</h3>
-            <ul style={styles.benefitList}>
-              {formatList(product.keyBenefits)}
-            </ul>
+        {/* LEFT COLUMN: IMAGE */}
+        <div className="reveal-item" style={styles.leftCol}>
+          <div className="img-wrapper-heavy" style={styles.imgWrapper}>
+            <img src={imageSrc} alt={product.name} style={styles.img} />
           </div>
-        )}
-
-        {/* 5. USAGE & MANUFACTURING (Two Column Grid) */}
-        <div style={styles.infoGrid}>
-            
-            {/* Usage Box */}
-            {product.usageInfo && (
-              <div style={styles.infoBoxBlue}>
-                <h4 style={styles.boxTitle}><FaUtensils /> How to Use</h4>
-                <p style={styles.smallText}>{product.usageInfo}</p>
-                {product.recommendeddosage && (
-                   <p style={{...styles.smallText, marginTop: '5px', fontWeight:'bold'}}>
-                     Dosage: {product.recommendeddosage}
-                   </p>
-                )}
-              </div>
-            )}
-
-            {/* Manufacturing Box */}
-            {product.manufacturingInfo && (
-              <div style={styles.infoBoxGray}>
-                <h4 style={styles.boxTitle}><FaIndustry /> Manufacturing</h4>
-                <p style={styles.smallText}>{product.manufacturingInfo}</p>
-              </div>
-            )}
         </div>
 
-        {/* 6. SAFETY WARNING (Red Alert Box) */}
-        {product.safetyInfo && (
-          <div style={styles.warningBox}>
-            <FaExclamationTriangle style={{ fontSize: '20px', flexShrink:0 }} />
-            <div>
-               <strong style={{display:'block', marginBottom:'2px'}}>Safety Information</strong>
-               <span style={styles.smallText}>{product.safetyInfo}</span>
-            </div>
+        {/* RIGHT COLUMN: CONTENT */}
+        <div style={styles.rightCol}>
+          <span className="reveal-item" style={styles.category}>{product.category?.toUpperCase()}</span>
+          <h1 className="reveal-item" style={styles.title}>{product.name?.toUpperCase()}</h1>
+          
+          <div className="reveal-item" style={styles.priceRow}>
+            <span style={styles.price}>₹{product.price}</span>
+            <span style={isOutOfStock ? styles.outStock : styles.inStock}>
+               {isOutOfStock ? "• UNAVAILABLE" : "• IN STOCK"}
+            </span>
           </div>
-        )}
 
-        {/* --- CONTROLS FOOTER --- */}
-        <div style={styles.controls}>
+          <p className="reveal-item" style={styles.desc}>{product.description}</p>
+
+          <div className="reveal-item" style={styles.infoGrid}>
+             <div style={styles.infoBox}>
+                <FaUtensils color="#2d6a4f" />
+                <div><strong style={styles.label}>USAGE</strong><p style={styles.smallP}>{product.usageInfo || "Mix with water or meals."}</p></div>
+             </div>
+             <div style={styles.infoBox}>
+                <FaIndustry color="#2d6a4f" />
+                <div><strong style={styles.label}>SOURCE</strong><p style={styles.smallP}>{product.manufacturingInfo || "Organic Certified"}</p></div>
+             </div>
+          </div>
+
+          <div className="reveal-item" style={styles.actionRow}>
             {!isOutOfStock && (
-              <div style={styles.quantityWrapper}>
-                <button onClick={() => setQuantity(q => Math.max(1, q - 1))} style={styles.qtyBtn}>-</button>
-                <span style={styles.qtyNum}>{quantity}</span>
-                <button 
-                   onClick={() => setQuantity(q => Math.min(effectiveLimit, q + 1))} 
-                   style={{...styles.qtyBtn, opacity: quantity >= effectiveLimit ? 0.5 : 1}}
-                   disabled={quantity >= effectiveLimit}
-                >+</button>
+              <div style={styles.qtyBox}>
+                <button className="qty-btn" onClick={() => setQuantity(q => Math.max(1, q-1))} style={styles.qBtn}>-</button>
+                <span style={{fontWeight:'900', width: '40px', textAlign:'center'}}>{quantity}</span>
+                <button className="qty-btn" onClick={() => setQuantity(q => q+1)} style={styles.qBtn}>+</button>
               </div>
             )}
-
+            
             <button 
-              onClick={() => {
-                addToCart(product, quantity);
-                navigate('/cart');
-              }}
-              disabled={isOutOfStock}
+              className="main-btn"
+              onClick={() => !isOutOfStock && addToCart(product, quantity)}
               style={{
-                ...styles.addToCartBtn,
-                background: isOutOfStock ? '#ccc' : 'linear-gradient(45deg, #27ae60, #2ecc71)',
-                cursor: isOutOfStock ? 'not-allowed' : 'pointer'
+                ...styles.mainBtn,
+                background: isOutOfStock ? '#d68c45' : '#1b4332',
               }}
             >
-              {isOutOfStock ? 'Notify Me' : `Add ${quantity} Item${quantity > 1 ? 's' : ''} to Cart`}
+              {isOutOfStock ? "NOTIFY ME" : `ADD TO CART • ₹${product.price * quantity}`}
             </button>
+          </div>
         </div>
 
       </div>
@@ -192,208 +153,45 @@ const ProductDetails = ({ addToCart }) => {
   );
 };
 
-// --- FANCY STYLES ---
 const styles = {
-  container: {
-    padding: '40px 20px',
-    maxWidth: '1200px',
-    margin: '0 auto',
-    display: 'flex',
-    gap: '50px',
-    flexWrap: 'wrap',
-    alignItems: 'flex-start',
-    fontFamily: "'Segoe UI', Tahoma, Geneva, Verdana, sans-serif"
+  page: { background: '#fff', minHeight: '100vh', paddingTop: '160px', paddingBottom: '100px' },
+  loader: { height: '100vh', display: 'flex', justifyContent: 'center', alignItems: 'center', fontWeight: '900', color: '#1b4332' },
+  nav: { position: 'fixed', top: 0, width: '100%', padding: '40px 60px', zIndex: 100, background: 'rgba(255,255,255,0.8)', backdropFilter: 'blur(20px)' },
+  backBtn: { background: 'none', border: 'none', fontWeight: '900', fontSize: '0.7rem', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '10px', color: '#1b4332' },
+  
+  // FIXED GRID SYSTEM (Prevents content dropping down)
+  grid: { 
+    maxWidth: '1300px', 
+    margin: '0 auto', 
+    display: 'grid', 
+    gridTemplateColumns: '1fr 1fr', // Force 50/50 split
+    gap: '80px', 
+    padding: '0 40px',
+    alignItems: 'start'
   },
-  imageSection: {
-    flex: '1 1 400px',
-    position: 'sticky',
-    top: '20px'
-  },
-  image: {
-    width: '100%',
-    borderRadius: '15px',
-    boxShadow: '0 10px 30px rgba(0,0,0,0.1)',
-    objectFit: 'cover'
-  },
-  details: {
-    flex: '1 1 500px',
-  },
-  title: {
-    fontSize: '36px',
-    color: '#2c3e50',
-    marginBottom: '5px',
-    lineHeight: '1.2'
-  },
-  categoryTag: {
-    textTransform: 'uppercase',
-    letterSpacing: '1px',
-    fontSize: '12px',
-    color: '#95a5a6',
-    fontWeight: 'bold',
-    marginBottom: '15px'
-  },
-  badgeContainer: {
-    display: 'flex',
-    gap: '10px',
-    flexWrap: 'wrap',
-    marginBottom: '20px'
-  },
-  badge: {
-    backgroundColor: '#e8f8f5',
-    color: '#27ae60',
-    padding: '6px 12px',
-    borderRadius: '20px',
-    fontSize: '13px',
-    fontWeight: 'bold',
-    border: '1px solid #d4efdf'
-  },
-  priceCard: {
-    background: '#f8f9fa',
-    padding: '20px',
-    borderRadius: '10px',
-    marginBottom: '30px',
-    borderLeft: '5px solid #27ae60'
-  },
-  price: {
-    fontSize: '32px',
-    color: '#27ae60',
-    margin: 0
-  },
-  taxNote: {
-    fontSize: '12px',
-    color: '#7f8c8d'
-  },
-  stockBadgeIn: {
-    color: '#27ae60',
-    fontWeight: 'bold',
-    fontSize: '14px',
-    display:'flex', alignItems:'center', gap:'5px'
-  },
-  stockBadgeOut: {
-    color: '#e74c3c',
-    fontWeight: 'bold',
-    fontSize: '14px'
-  },
-  sectionBlock: {
-    marginBottom: '30px'
-  },
-  sectionTitle: {
-    fontSize: '18px',
-    color: '#34495e',
-    marginBottom: '15px',
-    display: 'flex',
-    alignItems: 'center',
-    gap: '10px',
-    borderBottom: '1px solid #eee',
-    paddingBottom: '10px'
-  },
-  text: {
-    lineHeight: '1.7',
-    color: '#555',
-    fontSize: '16px'
-  },
-  benefitList: {
-    listStyle: 'none',
-    padding: 0,
-    margin: 0
-  },
-  benefitItem: {
-    display: 'flex',
-    alignItems: 'flex-start',
-    marginBottom: '10px',
-    fontSize: '15px',
-    color: '#444',
-    lineHeight: '1.5'
-  },
-  infoGrid: {
-    display: 'grid',
-    gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
-    gap: '20px',
-    marginBottom: '25px'
-  },
-  infoBoxBlue: {
-    background: '#eaf2f8',
-    padding: '20px',
-    borderRadius: '10px',
-    border: '1px solid #d6eaf8'
-  },
-  infoBoxGray: {
-    background: '#fdfefe',
-    padding: '20px',
-    borderRadius: '10px',
-    border: '1px solid #eaecee'
-  },
-  boxTitle: {
-    fontSize: '16px',
-    margin: '0 0 10px 0',
-    display: 'flex',
-    alignItems: 'center',
-    gap: '8px',
-    color: '#2c3e50'
-  },
-  smallText: {
-    fontSize: '14px',
-    color: '#555',
-    margin: 0,
-    lineHeight: '1.5'
-  },
-  warningBox: {
-    background: '#fdedec',
-    color: '#c0392b',
-    padding: '15px',
-    borderRadius: '8px',
-    display: 'flex',
-    alignItems: 'center',
-    gap: '15px',
-    marginBottom: '30px',
-    border: '1px solid #fadbd8'
-  },
-  controls: {
-    display: 'flex',
-    gap: '20px',
-    marginTop: '20px',
-    paddingTop: '20px',
-    borderTop: '1px solid #eee',
-    alignItems: 'center'
-  },
-  quantityWrapper: {
-    display: 'flex',
-    alignItems: 'center',
-    border: '1px solid #ddd',
-    borderRadius: '5px'
-  },
-  qtyBtn: {
-    background: 'none',
-    border: 'none',
-    padding: '10px 15px',
-    fontSize: '18px',
-    cursor: 'pointer',
-    color: '#555'
-  },
-  qtyNum: {
-    padding: '0 15px',
-    fontWeight: 'bold',
-    fontSize: '18px'
-  },
-  addToCartBtn: {
-    flex: 1,
-    padding: '15px',
-    color: 'white',
-    border: 'none',
-    borderRadius: '8px',
-    fontSize: '16px',
-    fontWeight: 'bold',
-    textTransform: 'uppercase',
-    letterSpacing: '1px',
-    boxShadow: '0 4px 6px rgba(0,0,0,0.1)',
-    transition: 'transform 0.2s'
-  },
-  loading: {
-    textAlign: 'center',
-    marginTop: '50px',
-    fontSize: '20px',
-    color: '#777'
-  }
+
+  leftCol: { width: '100%' },
+  imgWrapper: { width: '100%', height: '650px', borderRadius: '40px', overflow: 'hidden', boxShadow: '0 30px 60px rgba(0,0,0,0.06)' },
+  img: { width: '100%', height: '100%', objectFit: 'cover' },
+  
+  rightCol: { display: 'flex', flexDirection: 'column', gap: '25px' },
+  category: { color: '#2d6a4f', fontWeight: '900', letterSpacing: '3px', fontSize: '0.75rem' },
+  title: { fontSize: '4.5rem', fontWeight: '900', lineHeight: '0.9', margin: 0, color: '#1b4332', letterSpacing: '-2px' },
+  priceRow: { display: 'flex', alignItems: 'center', gap: '25px' },
+  price: { fontSize: '2.5rem', fontWeight: '300', color: '#1b4332' },
+  inStock: { color: '#2d6a4f', fontSize: '0.7rem', fontWeight: '900', letterSpacing: '1px' },
+  outStock: { color: '#d68c45', fontSize: '0.7rem', fontWeight: '900', letterSpacing: '1px' },
+  desc: { color: '#555', lineHeight: '1.7', fontSize: '1.1rem', maxWidth: '500px' },
+  
+  infoGrid: { display: 'flex', flexDirection: 'column', gap: '20px', borderTop: '1px solid #f0f0f0', paddingTop: '30px' },
+  infoBox: { display: 'flex', gap: '20px', alignItems: 'flex-start' },
+  label: { fontSize: '0.65rem', letterSpacing: '2px', color: '#aaa' },
+  smallP: { margin: '5px 0 0 0', fontSize: '0.95rem', color: '#444' },
+  
+  actionRow: { display: 'flex', gap: '20px', marginTop: '10px' },
+  qtyBox: { display: 'flex', alignItems: 'center', border: '1px solid #eee', borderRadius: '50px', padding: '5px' },
+  qBtn: { width: '45px', height: '45px', border: 'none', background: 'transparent', cursor: 'pointer', borderRadius: '50%', transition: '0.3s', fontSize: '1.2rem' },
+  mainBtn: { flex: 1, color: '#fff', border: 'none', borderRadius: '50px', fontWeight: '900', fontSize: '0.8rem', letterSpacing: '2px', transition: '0.4s', padding: '20px' },
 };
 
 export default ProductDetails;

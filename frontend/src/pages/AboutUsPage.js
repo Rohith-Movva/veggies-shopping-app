@@ -1,350 +1,254 @@
-import React from 'react';
+import React, { useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
-import { FaArrowLeft, FaUsers, FaTractor, FaHeart, FaCheckCircle } from 'react-icons/fa';
+// Make sure FaArrowRight is imported here
+import { FaArrowLeft, FaUsers, FaTractor, FaHeart, FaCheckCircle, FaQuoteLeft, FaArrowRight } from 'react-icons/fa';
+import Lenis from 'lenis';
+import gsap from 'gsap';
+import { useGSAP } from '@gsap/react';
+import { ScrollTrigger } from 'gsap/ScrollTrigger';
 
-// 1. IMPORT IMAGES
-// Make sure these files exist in src/assets/
+// IMPORT IMAGES
 import pranayImg from '../assets/pranay.jpg'; 
 import abhishekImg from '../assets/abhishek.jpg'; 
 
+gsap.registerPlugin(ScrollTrigger);
+
 const AboutUsPage = () => {
+  const containerRef = useRef();
+
+  // --- SMOOTH SCROLL ---
+  useEffect(() => {
+    const lenis = new Lenis({ duration: 1.2, smoothWheel: true });
+    function raf(time) { lenis.raf(time); requestAnimationFrame(raf); }
+    requestAnimationFrame(raf);
+    return () => lenis.destroy();
+  }, []);
+
+  // --- HEAVY UI ANIMATIONS ---
+  useGSAP(() => {
+    // 1. Hero Title Reveal
+    gsap.from(".reveal-title", {
+      y: 100, opacity: 0, duration: 1.2, stagger: 0.2, ease: "power4.out"
+    });
+
+    // 2. NEW APPROACH: Founder Image Mask Reveal
+    // Instead of moving the image, we reveal it using clip-path so it stays in place.
+    gsap.fromTo(".founder-img-reveal", 
+      { clipPath: "inset(100% 0 0 0)" }, // Start hidden from bottom
+      { 
+        clipPath: "inset(0% 0 0 0)", // Reveal upward fully
+        duration: 1.5,
+        ease: "power4.inOut",
+        stagger: 0.3,
+        scrollTrigger: {
+          trigger: ".founders-section",
+          start: "top 75%", // Starts when section is in view
+        }
+      }
+    );
+
+    // Animate the text below images separately
+    gsap.from(".founder-info", {
+      y: 30, opacity: 0, duration: 0.8, stagger: 0.3, delay: 0.5,
+      scrollTrigger: { trigger: ".founders-section", start: "top 75%" }
+    });
+
+    // 3. Principles Reveal
+    gsap.from(".principle-card", {
+      scrollTrigger: { trigger: ".principles-grid", start: "top 80%" },
+      scale: 0.8, opacity: 0, stagger: 0.1, duration: 0.8, ease: "back.out(1.7)"
+    });
+
+    // 4. Parallax Hero Background
+    gsap.to(".hero-bg", {
+      yPercent: 30, ease: "none",
+      scrollTrigger: { trigger: ".hero-section", start: "top top", end: "bottom top", scrub: true }
+    });
+
+  }, { scope: containerRef });
+
   return (
-    <div style={styles.container}>
-      
-      {/* Navigation Helper */}
-      <div style={styles.navBar}>
+    <div ref={containerRef} style={styles.container}>
+      <style>{`
+        .mask { overflow: hidden; display: inline-block; }
+        /* Removed Grayscale filter, kept slight scale on hover */
+        .founder-card:hover img { transform: scale(1.03); }
+        .principle-card:hover { background: #27ae60 !important; color: white !important; transform: translateY(-5px); }
+        .principle-card:hover svg { color: white !important; }
+        .value-card:hover { border-color: #27ae60 !important; }
+      `}</style>
+
+      <nav style={styles.nav}>
         <Link to="/" style={styles.backLink}>
-          <FaArrowLeft /> Back to Home
+          <FaArrowLeft /> <span>Back to Home</span>
         </Link>
-      </div>
+      </nav>
 
-      {/* Hero Section */}
-      <div style={styles.hero}>
-        <h1 style={styles.title}>A Journey Born from Struggle, Belief & Purpose</h1>
-        <p style={styles.subtitle}>
-          Founded by Pranay Muthumula Veera & Abhishek Bandla
-        </p>
-      </div>
+      {/* --- HERO --- */}
+      <section className="hero-section" style={styles.hero}>
+        <div className="hero-bg" style={styles.heroBg} />
+        <div style={styles.overlay} />
+        <div style={styles.heroContent}>
+          <div className="mask"><h1 className="reveal-title" style={styles.bigTitle}>OUR JOURNEY</h1></div><br/>
+          <div className="mask"><p className="reveal-title" style={styles.subtitle}>Born from Struggle, Belief & Purpose</p></div>
+          <div className="mask"><p className="reveal-title" style={styles.foundersName}>Pranay Muthumula Veera & Abhishek Bandla</p></div>
+        </div>
+      </section>
 
-      {/* Main Content Grid */}
-      <div style={styles.content}>
-        
-        {/* Section 1: The Origin Story */}
-        <section style={styles.section}>
-          <h2 style={styles.heading}>Our Roots</h2>
-          <p style={styles.text}>
-            Agro Tech Harvest is not just a brand; it is a journey. We, <strong>Pranay Muthumula Veera and Abhishek Bandla</strong>, were raised in a simple rural family where hard work was a way of life.
-          </p>
-
-          {/* FOUNDERS PHOTO GRID */}
-          <div style={styles.foundersGrid}>
+      {/* --- STORY & FOUNDERS --- */}
+      <section style={styles.storySection}>
+        <div style={styles.storyGrid}>
+          <div style={styles.textColumn}>
+            <h2 style={styles.sectionHeading}>OUR ROOTS</h2>
+            <p style={styles.mainText}>
+              Raised in a simple rural family where hard work was a way of life, we observed a market filled with chemical-laden "healthy" foods. We decided to change that.
+            </p>
+            <div style={styles.quoteBox}>
+              <FaQuoteLeft style={styles.quoteIcon} />
+              <p>"Can we provide nutrition in its purest, most natural form?"</p>
+            </div>
+          </div>
+          
+          {/* UPDATED FOUNDERS SECTION */}
+          <div className="founders-section" style={styles.foundersGrid}>
             
-            {/* Founder 1 */}
-            <div style={styles.founderCard}>
-                <img 
-                    src={pranayImg} 
-                    alt="Pranay Muthumula Veera" 
-                    style={styles.founderImg}
-                    onError={(e) => {
-                      e.target.onerror = null; 
-                      e.target.src="https://cdn-icons-png.flaticon.com/512/3135/3135715.png"
-                    }}
-                />
-                <h3 style={styles.founderName}>Pranay Muthumula Veera</h3>
-                <p style={styles.founderRole}>Co-Founder</p>
+            <div className="founder-card" style={styles.founderCard}>
+              {/* Added 'founder-img-reveal' class for the new animation */}
+              <div className="founder-img-reveal" style={styles.imgWrapper}>
+                <img src={pranayImg} alt="Pranay" style={styles.founderImg} onError={(e) => e.target.src="https://via.placeholder.com/300x400"} />
+              </div>
+              <div className="founder-info">
+                <h3>Pranay Muthumula Veera</h3>
+                <span>Co-Founder</span>
+              </div>
             </div>
 
-            {/* Founder 2 */}
-            <div style={styles.founderCard}>
-                <img 
-                    src={abhishekImg} 
-                    alt="Abhishek Bandla" 
-                    style={styles.founderImg} 
-                    onError={(e) => {
-                      e.target.onerror = null; 
-                      e.target.src="https://cdn-icons-png.flaticon.com/512/3135/3135715.png"
-                    }}
-                />
-                <h3 style={styles.founderName}>Abhishek Bandla</h3>
-                <p style={styles.founderRole}>Co-Founder</p>
+            <div className="founder-card" style={styles.founderCard}>
+               {/* Added 'founder-img-reveal' class for the new animation */}
+              <div className="founder-img-reveal" style={styles.imgWrapper}>
+                <img src={abhishekImg} alt="Abhishek" style={styles.founderImg} onError={(e) => e.target.src="https://via.placeholder.com/300x400"} />
+              </div>
+              <div className="founder-info">
+                <h3>Abhishek Bandla</h3>
+                <span>Co-Founder</span>
+              </div>
             </div>
 
           </div>
+        </div>
+      </section>
 
-          <p style={styles.text}>
-            The idea behind Agro Tech Harvest came as we observed the food market. One truth became impossible to ignore: many products labelled as "healthy" were actually filled with chemicals and preservatives. 
+      {/* --- PRINCIPLES --- */}
+      <section style={styles.principlesSection}>
+        <div style={{ textAlign: 'center', marginBottom: '60px' }}>
+          <h2 style={styles.sectionHeading}>UNCHANGING PRINCIPLES</h2>
+          <p style={{ color: '#888', letterSpacing: '2px' }}>OPEN TO CHALLENGE. NOTHING TO HIDE.</p>
+        </div>
+        <div className="principles-grid" style={styles.principlesGrid}>
+          {['No Quality Compromise', 'No Chemicals', 'No Preservatives', 'No Added Sugars', 'Pure Fruits & Veg', '100% Lab Tested'].map((p, i) => (
+            <div key={i} className="principle-card" style={styles.principleCard}>
+              <FaCheckCircle size={20} color="#27ae60" />
+              <span>{p.toUpperCase()}</span>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      {/* --- MISSION --- */}
+      <section style={styles.missionSection}>
+        <div style={styles.missionCard}>
+          <h2 style={{ fontSize: '3rem', fontWeight: '900', color: '#fff' }}>WHY AGRO TECH HARVEST?</h2>
+          <div style={styles.breakdownRow}>
+            <div style={styles.breakdownItem}>
+              <h3>AGRO TECH</h3>
+              <p>Integration of Agriculture with Technology</p>
+            </div>
+            <div style={styles.divider} />
+            <div style={styles.breakdownItem}>
+              <h3>HARVEST</h3>
+              <p>The hard work of farmers</p>
+            </div>
+          </div>
+          <p style={styles.missionStatement}>
+            Our identity is built on Trust, Purity, and Honesty. This is not just a business—it is a commitment to healthier families.
           </p>
-          
-          <div style={styles.quoteBox}>
-            "The most powerful question arose: Can we provide nutrition in its purest, most natural form?"
-          </div>
+        </div>
+      </section>
 
-          <p style={styles.text}>
-            This question became our turning point, transforming a vision into reality. The journey was not easy, but we stood by our principles.
-          </p>
-        </section>
+      {/* --- VALUES --- */}
+      <section style={styles.valuesSection}>
+        <div className="value-card" style={styles.valueCard}>
+          <FaUsers style={styles.icon} />
+          <h3>Rural Employment</h3>
+          <p>Empowering local communities by creating meaningful work.</p>
+        </div>
+        <div className="value-card" style={styles.valueCard}>
+          <FaTractor style={styles.icon} />
+          <h3>Support Farmers</h3>
+          <p>Ensuring fair value for the backbone of our nation.</p>
+        </div>
+        <div className="value-card" style={styles.valueCard}>
+          <FaHeart style={styles.icon} />
+          <h3>Accessible Nutrition</h3>
+          <p>Pure nutrition for every single Indian kitchen.</p>
+        </div>
+      </section>
 
-        {/* Section 2: Our Principles */}
-        <section style={styles.sectionAlt}>
-          <h2 style={styles.heading}>Our Unchanging Principles</h2>
-          <p style={{marginBottom: '30px', color: '#555'}}>We are open to challenge because we have nothing to hide.</p>
-          
-          <div style={styles.principlesGrid}>
-             <div style={styles.principleItem}><FaCheckCircle color="#27ae60"/> No Compromise on Quality</div>
-             <div style={styles.principleItem}><FaCheckCircle color="#27ae60"/> No Chemicals</div>
-             <div style={styles.principleItem}><FaCheckCircle color="#27ae60"/> No Preservatives</div>
-             <div style={styles.principleItem}><FaCheckCircle color="#27ae60"/> No Added Sugars</div>
-             <div style={styles.principleItem}><FaCheckCircle color="#27ae60"/> Only Pure Fruits & Veg</div>
-             <div style={styles.principleItem}><FaCheckCircle color="#27ae60"/> 100% Lab Tested</div>
-          </div>
-        </section>
-
-        {/* Section 3: The Name & Mission */}
-        <section style={styles.section}>
-          <h2 style={styles.heading}>Why "Agro Tech Harvest"?</h2>
-          <div style={styles.nameBreakdown}>
-             <p><strong>Agro Tech</strong> = Integration of Agriculture with Technology</p>
-             <p><strong>Harvest</strong> = The hard work of farmers</p>
-          </div>
-          <p style={styles.text}>
-            Our mission is simple: To bring nature's goodness directly from farms to Homes without any manipulation.
-          </p>
-          
-          <p style={styles.text}>
-            We carefully produce raw powders from Banana, carrot, beetroot, lemon, moringa, and more. Each product is made with a specific purpose and loaded with health benefits.
-          </p>
-        </section>
-
-        {/* Section 4: Vision Cards */}
-        <section style={styles.valuesSection}>
-          <div style={styles.card}>
-            <FaUsers style={styles.icon} />
-            <h3>Rural Employment</h3>
-            <p>To create employment opportunities in rural areas and empower local communities.</p>
-          </div>
-          <div style={styles.card}>
-            <FaTractor style={styles.icon} />
-            <h3>Support Farmers</h3>
-            <p>Supporting our backbone—the farmers—by ensuring they get fair value for their produce.</p>
-          </div>
-          <div style={styles.card}>
-            <FaHeart style={styles.icon} />
-            <h3>Accessible Nutrition</h3>
-            <p>Making healthy, chemical-free nutrition accessible to every single Indian kitchen.</p>
-          </div>
-        </section>
-
-        {/* Section 5: Closing Statement */}
-        <section style={{marginTop: '60px', textAlign: 'center'}}>
-          <h2 style={{color: '#2c3e50', marginBottom: '20px'}}>Our Identity</h2>
-          <p style={styles.text}>
-            At Agro Tech Harvest, we are not chasing profits. Our aim is to build an organic firm that provides 100% nature-given foods. We stand for <strong>Trust, Purity, and Honesty</strong>.
-            <br /><br />
-            This is not just a business—it is our identity and commitment to healthier families and a better future.
-          </p>
-        </section>
-
-      </div>
-
-      {/* Footer Call to Action */}
-      <div style={styles.footer}>
-        <h3>We invite you to be a part of this journey from our family to yours.</h3>
-        <Link to="/" style={styles.ctaBtn}>Explore Our Products</Link>
-      </div>
-
+      {/* --- FOOTER CTA --- */}
+      <footer style={styles.footer}>
+        <h2>BE A PART OF THE JOURNEY.</h2>
+        {/* Added FaArrowRight here which caused the previous error */}
+        <Link to="/" style={styles.ctaBtn}>EXPLORE PRODUCTS <FaArrowRight /></Link>
+      </footer>
     </div>
   );
 };
 
 const styles = {
-  container: {
-    fontFamily: "'Segoe UI', Tahoma, Geneva, Verdana, sans-serif",
-    color: '#333',
-    lineHeight: '1.6',
-  },
-  navBar: {
-    padding: '20px',
-    backgroundColor: '#f9f9f9',
-  },
-  backLink: {
-    textDecoration: 'none',
-    color: '#2c3e50',
-    fontWeight: 'bold',
-    display: 'flex',
-    alignItems: 'center',
-    gap: '8px',
-    fontSize: '16px'
-  },
-  hero: {
-    backgroundColor: '#27ae60', 
-    color: 'white',
-    padding: '80px 20px',
-    textAlign: 'center',
-    backgroundImage: 'linear-gradient(rgba(0,0,0,0.5), rgba(0,0,0,0.5)), url("https://images.unsplash.com/photo-1500937386664-56d1dfef3854?ixlib=rb-1.2.1&auto=format&fit=crop&w=1950&q=80")', 
-    backgroundSize: 'cover',
-    backgroundPosition: 'center',
-  },
-  title: {
-    fontSize: '2.5rem',
-    marginBottom: '15px',
-    fontWeight: 'bold',
-  },
-  subtitle: {
-    fontSize: '1.3rem',
-    maxWidth: '800px',
-    margin: '0 auto',
-    opacity: '0.95',
-    fontWeight: '500'
-  },
-  content: {
-    maxWidth: '1000px',
-    margin: '0 auto',
-    padding: '60px 20px',
-  },
-  section: {
-    marginBottom: '60px',
-    textAlign: 'center',
-  },
-  sectionAlt: {
-    backgroundColor: '#f0fdf4',
-    padding: '50px 30px',
-    borderRadius: '15px',
-    textAlign: 'center',
-    marginBottom: '60px',
-    boxShadow: '0 5px 15px rgba(0,0,0,0.05)'
-  },
-  heading: {
-    color: '#2c3e50',
-    fontSize: '2rem',
-    marginBottom: '25px',
-    borderBottom: '3px solid #e67e22',
-    display: 'inline-block',
-    paddingBottom: '10px'
-  },
-  text: {
-    fontSize: '1.15rem',
-    color: '#555',
-    maxWidth: '800px',
-    margin: '0 auto',
-    marginBottom: '20px'
-  },
-  foundersGrid: {
-    display: 'flex',
-    justifyContent: 'center',
-    gap: '40px',
-    margin: '40px 0',
-    flexWrap: 'wrap'
-  },
-  founderCard: {
-    textAlign: 'center',
-    maxWidth: '220px',
-    // Ensure the card itself is aligned nicely
-    display: 'flex',
-    flexDirection: 'column',
-    alignItems: 'center'
-  },
-  // 🔴 FIXED ALIGNMENT STYLES
-  founderImg: {
-    display: 'block', // Forces it to respect margin auto
-    margin: '0 auto 15px auto', // Centers horizontally, margin bottom 15px
-    width: '180px',
-    height: '250px',
-    borderRadius: '10px', 
-    objectFit: 'cover',
-    border: '4px solid #fff',
-    boxShadow: '0 4px 10px rgba(0,0,0,0.1)',
-    backgroundColor: '#eee'
-  },
-  founderName: {
-    fontSize: '1.2rem',
-    color: '#2c3e50',
-    margin: '5px 0',
-    fontWeight: 'bold'
-  },
-  founderRole: {
-    color: '#7f8c8d',
-    fontSize: '0.9rem',
-    margin: 0
-  },
-  quoteBox: {
-    fontSize: '1.4rem',
-    fontStyle: 'italic',
-    color: '#27ae60',
-    fontWeight: 'bold',
-    margin: '40px auto',
-    padding: '20px',
-    borderLeft: '5px solid #e67e22',
-    backgroundColor: '#fff',
-    maxWidth: '700px',
-    boxShadow: '0 2px 10px rgba(0,0,0,0.05)'
-  },
-  principlesGrid: {
-    display: 'grid',
-    gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
-    gap: '20px',
-    maxWidth: '800px',
-    margin: '0 auto'
-  },
-  principleItem: {
-    backgroundColor: 'white',
-    padding: '15px',
-    borderRadius: '8px',
-    display: 'flex',
-    alignItems: 'center',
-    gap: '10px',
-    fontWeight: 'bold',
-    color: '#2c3e50',
-    boxShadow: '0 2px 5px rgba(0,0,0,0.05)'
-  },
-  nameBreakdown: {
-    backgroundColor: '#fff3cd', 
-    padding: '20px',
-    borderRadius: '10px',
-    display: 'inline-block',
-    marginBottom: '30px',
-    textAlign: 'left'
-  },
-  valuesSection: {
-    display: 'flex',
-    justifyContent: 'center',
-    gap: '30px',
-    flexWrap: 'wrap',
-    marginTop: '40px',
-  },
-  card: {
-    flex: '1',
-    minWidth: '280px',
-    padding: '30px',
-    backgroundColor: 'white',
-    boxShadow: '0 10px 20px rgba(0,0,0,0.08)',
-    borderRadius: '15px',
-    textAlign: 'center',
-    border: '1px solid #eee',
-    transition: 'transform 0.3s ease'
-  },
-  icon: {
-    fontSize: '40px',
-    color: '#27ae60',
-    marginBottom: '15px',
-  },
-  footer: {
-    textAlign: 'center',
-    padding: '60px 20px',
-    backgroundColor: '#2c3e50',
-    color: 'white',
-  },
-  ctaBtn: {
-    display: 'inline-block',
-    marginTop: '20px',
-    padding: '15px 35px',
-    backgroundColor: '#e67e22',
-    color: 'white',
-    textDecoration: 'none',
-    fontWeight: 'bold',
-    borderRadius: '30px',
-    fontSize: '1.2rem',
-    boxShadow: '0 4px 15px rgba(230, 126, 34, 0.4)'
-  }
+  container: { background: '#fff', color: '#000', overflowX: 'hidden' },
+  nav: { position: 'fixed', top: 0, width: '100%', padding: '30px 60px', zIndex: 100 },
+  backLink: { textDecoration: 'none', color: '#fff', fontWeight: '900', fontSize: '0.8rem', display: 'flex', alignItems: 'center', gap: '10px', mixBlendMode: 'difference' },
+  
+  hero: { height: '100vh', position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'center', textAlign: 'center' },
+  heroBg: { position: 'absolute', inset: 0, backgroundImage: `url("https://images.unsplash.com/photo-1500937386664-56d1dfef3854?auto=format&fit=crop&w=1950&q=80")`, backgroundSize: 'cover', backgroundPosition: 'center', zIndex: 1 },
+  overlay: { position: 'absolute', inset: 0, background: 'rgba(0,0,0,0.6)', zIndex: 2 },
+  heroContent: { position: 'relative', zIndex: 3, color: '#fff' },
+  bigTitle: { fontSize: '10vw', fontWeight: '900', lineHeight: '0.8', margin: 0 },
+  subtitle: { fontSize: '1.5rem', fontWeight: '300', marginTop: '20px', letterSpacing: '2px' },
+  foundersName: { fontSize: '0.9rem', color: '#27ae60', fontWeight: 'bold', marginTop: '10px', letterSpacing: '4px' },
+
+  storySection: { padding: '150px 60px' },
+  storyGrid: { display: 'grid', gridTemplateColumns: '1.2fr 1fr', gap: '100px', maxWidth: '1400px', margin: '0 auto', alignItems: 'center' },
+  textColumn: { paddingRight: '50px' },
+  sectionHeading: { fontSize: '0.8rem', fontWeight: '900', letterSpacing: '5px', color: '#27ae60', marginBottom: '30px' },
+  mainText: { fontSize: '2rem', fontWeight: '400', lineHeight: '1.4', color: '#111' },
+  quoteBox: { marginTop: '50px', position: 'relative', paddingLeft: '40px' },
+  quoteIcon: { position: 'absolute', left: 0, top: 0, color: '#eee', fontSize: '2rem' },
+  
+  foundersGrid: { display: 'flex', gap: '40px' },
+  founderCard: { textAlign: 'center', flex: 1 },
+  // Updated Image Wrapper style for stability
+  imgWrapper: { overflow: 'hidden', borderRadius: '20px', marginBottom: '25px', height: '400px', background: '#f0f0f0' },
+  // Updated Image style - removed grayscale filter
+  founderImg: { width: '100%', height: '100%', objectFit: 'cover', transition: 'transform 0.5s ease' },
+
+  principlesSection: { padding: '150px 60px', background: '#f9f9f9' },
+  principlesGrid: { display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '20px', maxWidth: '1200px', margin: '0 auto' },
+  principleCard: { padding: '30px', background: '#fff', borderRadius: '10px', display: 'flex', alignItems: 'center', gap: '15px', fontWeight: '900', fontSize: '0.8rem', boxShadow: '0 5px 20px rgba(0,0,0,0.03)', transition: '0.3s' },
+
+  missionSection: { padding: '150px 60px', background: '#000' },
+  missionCard: { textAlign: 'center', maxWidth: '1000px', margin: '0 auto' },
+  breakdownRow: { display: 'flex', justifyContent: 'center', gap: '50px', margin: '60px 0', alignItems: 'center' },
+  breakdownItem: { color: '#fff', flex: 1 },
+  divider: { width: '1px', height: '100px', background: '#333' },
+  missionStatement: { color: '#888', fontSize: '1.2rem', lineHeight: '1.8' },
+
+  valuesSection: { padding: '150px 60px', display: 'flex', gap: '40px', maxWidth: '1400px', margin: '0 auto' },
+  valueCard: { flex: 1, padding: '50px', border: '1px solid #eee', borderRadius: '20px', textAlign: 'center', transition: '0.3s' },
+  icon: { fontSize: '3rem', color: '#27ae60', marginBottom: '30px' },
+
+  footer: { height: '70vh', background: '#111', color: '#fff', display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', textAlign: 'center' },
+  ctaBtn: { marginTop: '40px', padding: '20px 45px', background: '#27ae60', color: '#fff', textDecoration: 'none', fontWeight: '900', borderRadius: '50px', display: 'flex', alignItems: 'center', gap: '15px' }
 };
 
 export default AboutUsPage;
