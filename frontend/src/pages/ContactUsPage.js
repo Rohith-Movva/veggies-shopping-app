@@ -1,28 +1,19 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { 
-  FaArrowLeft, FaPaperPlane, FaCheckCircle, FaExclamationCircle, 
-  FaPhoneAlt, FaEnvelope, FaMapMarkerAlt 
-} from 'react-icons/fa';
-import Lenis from 'lenis';
-import gsap from 'gsap';
-import { useGSAP } from '@gsap/react';
-import { ScrollTrigger } from 'gsap/ScrollTrigger';
+import { FaArrowLeft, FaPaperPlane, FaCheckCircle, FaExclamationCircle, FaPhoneAlt, FaEnvelope, FaMapMarkerAlt } from 'react-icons/fa';
 import API from '../api'; 
-import contactusBg from '../assets/farm-bg.png';
-
-gsap.registerPlugin(ScrollTrigger);
 
 const ContactUsPage = () => {
   const [formData, setFormData] = useState({
-    name: '', email: '', mobile: '', comments: ''
+    name: '',
+    email: '',
+    mobile: '',
+    comments: ''
   });
   
   const [status, setStatus] = useState('idle'); 
   const [errorMessage, setErrorMessage] = useState('');
-  const containerRef = useRef();
 
-  // --- LOGIC (EXACTLY AS PROVIDED) ---
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
@@ -31,6 +22,7 @@ const ContactUsPage = () => {
     e.preventDefault();
     setStatus('submitting');
     setErrorMessage('');
+
     try {
       await API.post('/contact', formData);
       setStatus('success');
@@ -43,124 +35,236 @@ const ContactUsPage = () => {
     }
   };
 
-  useEffect(() => {
-    const lenis = new Lenis({ duration: 1.2 });
-    function raf(time) { lenis.raf(time); requestAnimationFrame(raf); }
-    requestAnimationFrame(raf);
-    return () => lenis.destroy();
-  }, []);
-
-  useGSAP(() => {
-    // Reveal everything with a heavy stagger
-    gsap.from(".glass-reveal", {
-      y: 100,
-      opacity: 0,
-      duration: 1.5,
-      stagger: 0.3,
-      ease: "expo.out",
-      delay: 0.2
-    });
-
-    // Magnetic effect for the "Send" button
-    const btn = document.querySelector('.magnetic-btn');
-    btn.addEventListener('mousemove', (e) => {
-      const rect = btn.getBoundingClientRect();
-      const x = (e.clientX - rect.left - rect.width / 2) * 0.3;
-      const y = (e.clientY - rect.top - rect.height / 2) * 0.3;
-      gsap.to(btn, { x, y, duration: 0.3 });
-    });
-    btn.addEventListener('mouseleave', () => {
-      gsap.to(btn, { x: 0, y: 0, duration: 0.5, ease: "elastic.out(1, 0.3)" });
-    });
-  }, { scope: containerRef });
-
   return (
-    <div ref={containerRef} style={styles.page}>
-      <style>{`
-        .glass-card { 
-            background: rgba(255, 255, 255, 0.05);  
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            border-radius: 30px;
-            box-shadow: 0 25px 50px rgba(0,0,0,0.3);
-        }
-        .heavy-input { 
-            background: rgba(255,255,255,0.05) !important; 
-            border: 1px solid rgba(255,255,255,0.1) !important; 
-            color: #fff !important;
+    <div className="animated-bg" style={styles.container}>
+      {/* Custom CSS for Advanced Motion & Responsive Grid */}
+      <style>
+        {`
+          /* Slow Moving Gradient Background */
+          @keyframes gradientMotion {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+          }
+          .animated-bg {
+            background: linear-gradient(-45deg, #e8f5e9, #ffffff, #f1f8e9, #e0f2f1);
+            background-size: 400% 400%;
+            animation: gradientMotion 15s ease infinite;
+          }
+
+          /* Staggered Slide Fades */
+          @keyframes slideRight {
+            0% { opacity: 0; transform: translateX(-40px); }
+            100% { opacity: 1; transform: translateX(0); }
+          }
+          @keyframes slideLeft {
+            0% { opacity: 0; transform: translateX(40px); }
+            100% { opacity: 1; transform: translateX(0); }
+          }
+
+          .slide-right { animation: slideRight 0.8s cubic-bezier(0.2, 0.8, 0.2, 1) forwards; }
+          .slide-left { animation: slideLeft 0.8s cubic-bezier(0.2, 0.8, 0.2, 1) forwards; animation-delay: 0.2s; opacity: 0; }
+
+          /* Interactive Cards */
+          .info-card {
             transition: all 0.3s ease;
-        }
-        .heavy-input:focus { 
-            background: rgba(255,255,255,0.1) !important; 
+            cursor: default;
+          }
+          .info-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px rgba(39, 174, 96, 0.15) !important;
             border-color: #27ae60 !important;
-            transform: scale(1.02);
-        }
-        .magnetic-btn:hover { background: #2ecc71 !important; }
-      `}</style>
+          }
 
-      {/* --- BACKGROUND IMAGE (The "Nature" part) --- */}
-      <div style={styles.bgImage} />
-      <div style={styles.overlay} />
+          /* Input Animations */
+          .animated-input {
+            transition: all 0.3s ease;
+          }
+          .animated-input:focus {
+            border-color: #27ae60 !important;
+            box-shadow: 0 0 0 4px rgba(39, 174, 96, 0.15) !important;
+            transform: translateY(-2px);
+          }
 
-      {/* Navigation */}
-      <nav style={styles.nav}>
+          /* Button Animations */
+          .animated-btn { transition: all 0.3s ease; }
+          .animated-btn:hover:not(:disabled) {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 20px rgba(39, 174, 96, 0.4) !important;
+          }
+          @keyframes flyAway {
+            0% { transform: translate(0, 0) scale(1); opacity: 1; }
+            50% { transform: translate(20px, -20px) scale(1.2); opacity: 0; }
+            100% { transform: translate(0, 0) scale(1); opacity: 1; }
+          }
+          .submitting-icon { animation: flyAway 1.5s infinite ease-in-out; }
+          @keyframes popIn {
+            0% { transform: scale(0.9); opacity: 0; }
+            100% { transform: scale(1); opacity: 1; }
+          }
+          .status-box { animation: popIn 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards; }
+
+          /* Responsive Layout */
+          .contact-wrapper {
+            display: flex;
+            flex-direction: column;
+            gap: 40px;
+            width: 100%;
+            max-width: 1100px;
+          }
+          @media (min-width: 850px) {
+            .contact-wrapper {
+              flex-direction: row;
+            }
+            .contact-info { flex: 1; }
+            .contact-form { flex: 1.2; }
+          }
+        `}
+      </style>
+
+      {/* Header */}
+      <header style={styles.header}>
         <Link to="/" style={styles.backLink}>
-          <FaArrowLeft /> <span>BACK TO HOME</span>
+          <FaArrowLeft style={{ marginRight: '8px' }} /> Back to Home
         </Link>
-      </nav>
+        <h1 style={styles.pageTitle}>Contact Us</h1>
+        <div style={{ width: '100px' }}></div> 
+      </header>
 
-      <div style={styles.content}>
-        <div style={styles.layoutGrid}>
+      {/* Main Content */}
+      <div style={styles.contentWrapper}>
+        <div className="contact-wrapper">
           
-          {/* LEFT: Info & Map */}
-          <div className="glass-reveal" style={styles.leftCol}>
-            <div className="glass-card" style={styles.infoCard}>
-                <h1 style={styles.mainTitle}>LET'S<br/>TALK.</h1>
-                <div style={styles.detailRow}><FaPhoneAlt color="#27ae60" /> <span>+91 9705116060</span></div>
-                <div style={styles.detailRow}><FaEnvelope color="#27ae60" /> <span>AGROTECHARVEST@GMAIL.COM</span></div>
-                
-                {/* --- YOUR EXACT MAP POINTER RESTORED --- */}
-                <div style={styles.mapWrapper}>
-                    <iframe 
-                        title="Agro Tech Harvest Location"
-                        src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3816.634123456789!2d79.6200!3d17.1500!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0%3A0x0!2zMTfCsDA5JzAwLjAiTiA3OcKwMzcnMTIuMCJF!5e0!3m2!1sen!2sin!4v1234567890" 
-                        width="100%" 
-                        height="200" 
-                        style={{ border: 0, borderRadius: '20px' }} 
-                        allowFullScreen="" 
-                        loading="lazy">
-                    </iframe>
+          {/* LEFT COLUMN: Contact Info & Map */}
+          <div className="contact-info slide-right">
+            <h2 style={styles.sectionHeading}>Get in Touch</h2>
+            <p style={styles.sectionSubheading}>We'd love to hear from you. Reach out using the details below or fill out the form.</p>
+            
+            <div style={styles.infoCardsContainer}>
+              {/* Phone Card */}
+              <div className="info-card" style={styles.infoCard}>
+                <div style={styles.iconCircle}><FaPhoneAlt /></div>
+                <div>
+                  <h3 style={styles.infoTitle}>Call Us</h3>
+                  <p style={styles.infoText}>+91-9705116060</p>
                 </div>
+              </div>
+
+              {/* Email Card */}
+              <div className="info-card" style={styles.infoCard}>
+                <div style={styles.iconCircle}><FaEnvelope /></div>
+                <div>
+                  <h3 style={styles.infoTitle}>Email Us</h3>
+                  <p style={styles.infoText}>Agrotecharvest@gmail.com</p>
+                </div>
+              </div>
+            </div>
+
+            {/* Google Map */}
+            <div className="info-card" style={styles.mapContainer}>
+              <div style={{ display: 'flex', alignItems: 'center', marginBottom: '15px', color: '#27ae60', fontWeight: 'bold' }}>
+                <FaMapMarkerAlt style={{ marginRight: '8px', fontSize: '20px' }} /> 
+                <span style={{ color: '#2c3e50' }}>Our Location</span>
+              </div>
+              <iframe 
+                title="Agro Tech Harvest Location"
+                src="https://maps.google.com/maps?q=17.418583,78.578389&hl=en&z=15&output=embed" 
+                width="100%" 
+                height="220" 
+                style={{ border: 0, borderRadius: '12px' }} 
+                allowFullScreen="" 
+                loading="lazy" 
+                referrerPolicy="no-referrer-when-downgrade">
+              </iframe>
             </div>
           </div>
 
-          {/* RIGHT: The Form */}
-          <div className="glass-reveal" style={styles.rightCol}>
-            <div className="glass-card" style={styles.formCard}>
-              <h2 style={styles.formTitle}>SEND A MESSAGE</h2>
+          {/* RIGHT COLUMN: The Form */}
+          <div className="contact-form slide-left">
+            <div style={styles.formCard}>
+              <h2 style={styles.formTitle}>Send a Message</h2>
 
-              {status === 'success' && <div style={styles.successMsg}><FaCheckCircle /> Sent Successfully!</div>}
-              {status === 'error' && <div style={styles.errorMsg}><FaExclamationCircle /> {errorMessage}</div>}
+              {status === 'success' && (
+                <div style={{...styles.statusBox, backgroundColor: '#d4edda', color: '#155724'}} className="status-box">
+                  <FaCheckCircle style={{ marginRight: '10px', fontSize: '20px' }} />
+                  Message sent successfully!
+                </div>
+              )}
+
+              {status === 'error' && (
+                <div style={{...styles.statusBox, backgroundColor: '#f8d7da', color: '#721c24'}} className="status-box">
+                  <FaExclamationCircle style={{ marginRight: '10px', fontSize: '20px' }} />
+                  {errorMessage}
+                </div>
+              )}
 
               <form onSubmit={handleSubmit} style={styles.form}>
                 <div style={styles.inputGroup}>
-                    <label style={styles.label}>FULL NAME</label>
-                    <input type="text" name="name" value={formData.name} onChange={handleChange} className="heavy-input" style={styles.input} required />
-                </div>
-                <div style={styles.inputGroup}>
-                    <label style={styles.label}>EMAIL ADDRESS</label>
-                    <input type="email" name="email" value={formData.email} onChange={handleChange} className="heavy-input" style={styles.input} required />
-                </div>
-                <div style={styles.inputGroup}>
-                    <label style={styles.label}>MOBILE</label>
-                    <input type="tel" name="mobile" value={formData.mobile} onChange={handleChange} className="heavy-input" style={styles.input} required />
-                </div>
-                <div style={styles.inputGroup}>
-                    <label style={styles.label}>MESSAGE</label>
-                    <textarea name="comments" value={formData.comments} onChange={handleChange} className="heavy-input" style={{...styles.input, height: '100px'}} required />
+                  <label style={styles.label}>Full Name</label>
+                  <input 
+                    type="text" 
+                    name="name" 
+                    value={formData.name} 
+                    onChange={handleChange} 
+                    style={styles.input} 
+                    className="animated-input"
+                    required 
+                  />
                 </div>
 
-                <button type="submit" className="magnetic-btn" style={styles.submitBtn} disabled={status === 'submitting'}>
-                  {status === 'submitting' ? 'SENDING...' : 'DISPATCH MESSAGE'} <FaPaperPlane style={{marginLeft: '10px'}} />
+                <div style={styles.inputGroup}>
+                  <label style={styles.label}>Email Address</label>
+                  <input 
+                    type="email" 
+                    name="email" 
+                    value={formData.email} 
+                    onChange={handleChange} 
+                    style={styles.input} 
+                    className="animated-input"
+                    required 
+                  />
+                </div>
+
+                <div style={styles.inputGroup}>
+                  <label style={styles.label}>Mobile Number</label>
+                  <input 
+                    type="tel" 
+                    name="mobile" 
+                    value={formData.mobile} 
+                    onChange={handleChange} 
+                    style={styles.input} 
+                    className="animated-input"
+                    required 
+                  />
+                </div>
+
+                <div style={styles.inputGroup}>
+                  <label style={styles.label}>Your Message</label>
+                  <textarea 
+                    name="comments" 
+                    value={formData.comments} 
+                    onChange={handleChange} 
+                    style={{ ...styles.input, height: '120px', resize: 'vertical' }} 
+                    className="animated-input"
+                    required 
+                  />
+                </div>
+
+                <button 
+                  type="submit" 
+                  style={{
+                    ...styles.submitBtn, 
+                    backgroundColor: status === 'submitting' ? '#95a5a6' : '#27ae60',
+                    cursor: status === 'submitting' ? 'not-allowed' : 'pointer'
+                  }} 
+                  className="animated-btn"
+                  disabled={status === 'submitting'}
+                >
+                  {status === 'submitting' ? (
+                    <>Sending... <FaPaperPlane className="submitting-icon" style={{ marginLeft: '10px' }} /></>
+                  ) : (
+                    <>Send Message <FaPaperPlane style={{ marginLeft: '10px' }} /></>
+                  )}
                 </button>
               </form>
             </div>
@@ -172,39 +276,33 @@ const ContactUsPage = () => {
   );
 };
 
+// Clean styling matching your brand
 const styles = {
-  page: { minHeight: '100vh', position: 'relative', overflow: 'hidden', color: '#fff' },
-  bgImage: { 
-    position: 'absolute', inset: 0, 
-    backgroundImage: `url(${contactusBg})`, 
-    backgroundSize: 'cover', backgroundPosition: 'center', zIndex: -2 
-  },
-  overlay: { position: 'absolute', inset: 0, background: 'rgba(0,0,0,0.7)', zIndex: -1 },
-  nav: { padding: '40px 60px', position: 'fixed', top: 0, width: '100%', zIndex: 100 },
-  backLink: { color: '#fff', textDecoration: 'none', fontWeight: '900', fontSize: '0.8rem', letterSpacing: '2px', display: 'flex', alignItems: 'center', gap: '10px' },
+  container: { fontFamily: "'Segoe UI', Tahoma, Geneva, Verdana, sans-serif", width: '100%', minHeight: '100vh', overflowX: 'clip' },
+  header: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '20px 40px', backgroundColor: 'rgba(255, 255, 255, 0.9)', backdropFilter: 'blur(10px)', boxShadow: '0 2px 10px rgba(0,0,0,0.05)', position: 'sticky', top: 0, zIndex: 1000 },
+  backLink: { display: 'flex', alignItems: 'center', textDecoration: 'none', color: '#2c3e50', fontWeight: '600', width: '120px', transition: 'color 0.2s' },
+  pageTitle: { color: '#2c3e50', margin: 0, fontSize: '24px', fontWeight: '800' },
+  contentWrapper: { display: 'flex', justifyContent: 'center', padding: '60px 20px', minHeight: 'calc(100vh - 80px)' },
   
-  content: { padding: '120px 60px', display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '100vh' },
-  layoutGrid: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(400px, 1fr))', gap: '40px', width: '100%', maxWidth: '1200px' },
-  
-  infoCard: { padding: '50px' },
-  mainTitle: { fontSize: '6rem', fontWeight: '900', lineHeight: 0.8, marginBottom: '40px' },
-  detailRow: { display: 'flex', alignItems: 'center', gap: '20px', marginBottom: '20px', fontWeight: 'bold', fontSize: '1rem' },
-  mapWrapper: { marginTop: '40px', overflow: 'hidden' },
+  // Left Column Styles
+  sectionHeading: { fontSize: '40px', color: '#2c3e50', margin: '0 0 15px 0', fontWeight: '800', lineHeight: '1.2' },
+  sectionSubheading: { fontSize: '18px', color: '#555', marginBottom: '35px', lineHeight: '1.6', maxWidth: '90%' },
+  infoCardsContainer: { display: 'flex', flexDirection: 'column', gap: '20px', marginBottom: '30px' },
+  infoCard: { display: 'flex', alignItems: 'center', backgroundColor: 'white', padding: '20px', borderRadius: '16px', boxShadow: '0 4px 15px rgba(0,0,0,0.03)', border: '1px solid #f0f0f0' },
+  iconCircle: { width: '50px', height: '50px', backgroundColor: '#e8f5e9', color: '#27ae60', borderRadius: '50%', display: 'flex', justifyContent: 'center', alignItems: 'center', fontSize: '20px', marginRight: '20px' },
+  infoTitle: { margin: '0 0 5px 0', fontSize: '14px', color: '#7f8c8d', textTransform: 'uppercase', letterSpacing: '1px' },
+  infoText: { margin: 0, fontSize: '18px', color: '#2c3e50', fontWeight: 'bold' },
+  mapContainer: { backgroundColor: 'white', padding: '20px', borderRadius: '16px', boxShadow: '0 4px 15px rgba(0,0,0,0.03)', border: '1px solid #f0f0f0' },
 
-  formCard: { padding: '50px' },
-  formTitle: { fontSize: '1.5rem', fontWeight: '900', letterSpacing: '3px', marginBottom: '40px', color: '#27ae60' },
-  form: { display: 'flex', flexDirection: 'column', gap: '20px' },
+  // Right Column (Form) Styles
+  formCard: { backgroundColor: 'white', padding: '40px', borderRadius: '24px', boxShadow: '0 20px 50px rgba(0,0,0,0.08)', width: '100%', border: '1px solid rgba(255,255,255,0.5)' },
+  formTitle: { color: '#27ae60', margin: '0 0 30px 0', fontSize: '28px', fontWeight: '800' },
+  form: { display: 'flex', flexDirection: 'column', gap: '22px' },
   inputGroup: { display: 'flex', flexDirection: 'column', gap: '8px' },
-  label: { fontSize: '0.65rem', fontWeight: '900', color: '#888', letterSpacing: '2px' },
-  input: { padding: '15px', borderRadius: '12px', border: 'none', outline: 'none', fontSize: '1rem' },
-  submitBtn: { 
-    marginTop: '20px', padding: '20px', background: '#27ae60', color: '#fff', 
-    border: 'none', borderRadius: '50px', fontWeight: '900', letterSpacing: '2px', 
-    cursor: 'pointer', display: 'flex', justifyContent: 'center', alignItems: 'center', transition: '0.3s' 
-  },
-
-  successMsg: { background: 'rgba(46, 204, 113, 0.2)', padding: '15px', borderRadius: '10px', marginBottom: '20px', color: '#2ecc71', fontWeight: 'bold' },
-  errorMsg: { background: 'rgba(231, 76, 60, 0.2)', padding: '15px', borderRadius: '10px', marginBottom: '20px', color: '#e74c3c', fontWeight: 'bold' }
+  label: { fontWeight: '600', color: '#2c3e50', fontSize: '14px', letterSpacing: '0.5px' },
+  input: { padding: '14px 16px', borderRadius: '10px', border: '1px solid #ddd', fontSize: '16px', outline: 'none', fontFamily: 'inherit', backgroundColor: '#fcfcfc' },
+  submitBtn: { padding: '16px', color: 'white', border: 'none', borderRadius: '10px', fontSize: '18px', fontWeight: 'bold', display: 'flex', justifyContent: 'center', alignItems: 'center', marginTop: '10px' },
+  statusBox: { padding: '16px 20px', borderRadius: '10px', marginBottom: '25px', display: 'flex', alignItems: 'center', fontWeight: '600', fontSize: '15px' },
 };
 
 export default ContactUsPage;
