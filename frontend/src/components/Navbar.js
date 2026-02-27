@@ -17,9 +17,9 @@ const Navbar = ({ user, cartCount, handleLogout }) => {
   const navRef = useRef();
   const navigate = useNavigate();
 
-  // const BACKEND_URL = window.location.hostname === 'localhost' 
-  //   ? "http://localhost:5000" 
-  //   : "https://veggies-shopping-app.onrender.com";
+  const BACKEND_URL = window.location.hostname === 'localhost' 
+    ? "http://localhost:5000" 
+    : "https://veggies-shopping-app.onrender.com";
 
   useEffect(() => {
     const handleResize = () => {
