@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import { FaSeedling, FaArrowRight, FaSearch, FaArrowLeft } from 'react-icons/fa';
+import { FaSeedling, FaArrowRight, FaLeaf, FaSearch, FaArrowLeft } from 'react-icons/fa';
 import Lenis from 'lenis';
 import gsap from 'gsap';
 import { useGSAP } from '@gsap/react';
