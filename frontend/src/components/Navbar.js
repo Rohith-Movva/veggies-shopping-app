@@ -9,14 +9,12 @@ import logo from '../assets/logo.png';
 import API from '../api';
 
 const Navbar = ({ user, cartCount, handleLogout }) => {
-  // --- ORIGINAL STATE & LOGIC (UNTOUCHED) ---
-  
   const [searchTerm, setSearchTerm] = useState('');
   const [allProducts, setAllProducts] = useState([]);
   const [searchResults, setSearchResults] = useState([]);
   
   // Responsive States
-  const [isMobile, setIsMobile] = useState(window.innerWidth < 1024); // Adjusted breakpoint for a larger nav
+  const [isMobile, setIsMobile] = useState(window.innerWidth < 1024); 
   const [isMenuOpen, setIsMenuOpen] = useState(false); 
   
   const navigate = useNavigate();
@@ -35,7 +33,6 @@ const Navbar = ({ user, cartCount, handleLogout }) => {
     };
     window.addEventListener('resize', handleResize);
     
-    // Fetch Products for Search
     const fetchProducts = async () => {
       try {
         const res = await API.get('/products');
@@ -73,7 +70,6 @@ const Navbar = ({ user, cartCount, handleLogout }) => {
       setIsMenuOpen(false); 
   };
 
-  // --- GSAP HIGH-MOTION LOGIC ---
   useEffect(() => {
     let ctx = gsap.context(() => {
       gsap.fromTo(navRef.current,
@@ -84,15 +80,15 @@ const Navbar = ({ user, cartCount, handleLogout }) => {
     return () => ctx.revert();
   }, []);
 
+  const styles = getStyles(isMobile);
+
   return (
     <nav ref={navRef} style={styles.navbar}>
       
-      {/* --- UPGRADED THEME CSS --- */}
       <style>
         {`
           @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&display=swap');
           
-          /* Link Hover Effects */
           .nav-link {
             position: relative;
             color: #475569;
@@ -101,30 +97,21 @@ const Navbar = ({ user, cartCount, handleLogout }) => {
             font-size: 1rem;
             transition: color 0.3s ease;
           }
-          .nav-link:hover {
-            color: #27ae60;
-          }
+          .nav-link:hover { color: #27ae60; }
           
-          /* Search Input Focus Polish */
-          .search-input {
-            transition: all 0.3s ease;
-          }
+          .search-input { transition: all 0.3s ease; }
           .search-input:focus {
             outline: none;
             border-color: #27ae60 !important;
             box-shadow: 0 0 0 4px rgba(39, 174, 96, 0.1) !important;
           }
 
-          /* Buttons Hover Effects */
-          .action-btn {
-            transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
-          }
+          .action-btn { transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1); }
           .action-btn:hover {
             transform: translateY(-2px);
             box-shadow: 0 8px 20px rgba(0,0,0,0.1);
           }
           
-          /* Dropdown Animations */
           .dropdown-menu {
             opacity: 0;
             visibility: hidden;
@@ -136,15 +123,12 @@ const Navbar = ({ user, cartCount, handleLogout }) => {
             visibility: visible;
             transform: translateY(0);
           }
-          .dropdown-item {
-            transition: background-color 0.2s ease, color 0.2s ease;
-          }
+          .dropdown-item { transition: background-color 0.2s ease, color 0.2s ease; }
           .dropdown-item:hover {
             background-color: #f0fdf4;
             color: #27ae60 !important;
           }
 
-          /* Mobile Menu Toggle Animation */
           .mobile-menu {
             max-height: 0;
             overflow: hidden;
@@ -152,24 +136,35 @@ const Navbar = ({ user, cartCount, handleLogout }) => {
             opacity: 0;
           }
           .mobile-menu.open {
-            max-height: 800px; /* Arbitrary large number to allow full expansion */
+            max-height: 800px; 
             opacity: 1;
+          }
+          
+          /* Ensures text hides gracefully on narrow phones so the logo and hamburger don't collide */
+          @media (max-width: 400px) {
+            .brand-text { font-size: 1rem !important; }
           }
         `}
       </style>
 
+      {/* --- TOP BAR (Logo Left, Menu/Links Right) --- */}
       <div style={styles.navInner}>
-        {/* --- 1. LOGO --- */}
+        
+        {/* 1. LOGO CONTAINER (Left Anchored & Locked) */}
         <Link 
           to={user ? "/shop" : "/"} 
           onClick={handleLinkClick} 
           style={styles.logoContainer}
         >
-          <img src={logo} alt="Agro Tech Harvest" style={{ height: isMobile ? '36px' : '44px' }} />
-          <span style={styles.brandName}>Agro Tech Harvest</span>
+          <img 
+            src={logo} 
+            alt="Agro Tech Harvest Logo" 
+            style={styles.logoImage} 
+          />
+          <span className="brand-text" style={styles.brandName}>Agro Tech Harvest</span>
         </Link>
 
-        {/* --- 2. DESKTOP CENTER: SEARCH (If Logged In) OR LINKS (If Logged Out) --- */}
+        {/* 2. DESKTOP CENTER (Search or Links) */}
         {!isMobile && (
           <div style={styles.centerContainer}>
             {user ? (
@@ -184,7 +179,6 @@ const Navbar = ({ user, cartCount, handleLogout }) => {
                 />
                 <button style={styles.searchBtn}><FaSearch /></button>
                 
-                {/* Search Results Dropdown */}
                 {searchTerm && searchResults.length > 0 && (
                   <div style={styles.searchResultsBox}>
                     {searchResults.map(product => {
@@ -212,20 +206,16 @@ const Navbar = ({ user, cartCount, handleLogout }) => {
           </div>
         )}
 
-        {/* --- 3. DESKTOP RIGHT: ACTION BUTTONS --- */}
+        {/* 3. DESKTOP RIGHT (Actions) */}
         {!isMobile && (
           <div style={styles.rightContainer}>
             {!user ? (
-              // LOGGED OUT ACTIONS
               <>
                 <Link to="/login" className="nav-link" style={{ marginRight: '20px', color: '#0f172a', fontWeight: '800' }}>Login</Link>
                 <Link to="/signup" className="action-btn" style={styles.signupBtn}>Sign Up</Link>
               </>
             ) : (
-              // LOGGED IN ACTIONS
               <div style={styles.loggedInActions}>
-                
-                {/* Categories Dropdown */}
                 <div className="dropdown-container" style={styles.dropdownContainer}>
                   <span className="nav-link" style={{ display: 'flex', alignItems: 'center', gap: '5px', cursor: 'pointer' }}>
                     Categories <FaChevronDown size="0.8em"/>
@@ -236,7 +226,6 @@ const Navbar = ({ user, cartCount, handleLogout }) => {
                   </div>
                 </div>
 
-                {/* Admin Dropdown */}
                 {user.isAdmin && (
                   <div className="dropdown-container" style={styles.dropdownContainer}>
                     <span className="nav-link" style={{ display: 'flex', alignItems: 'center', gap: '5px', cursor: 'pointer', color: '#dc2626' }}>
@@ -267,7 +256,7 @@ const Navbar = ({ user, cartCount, handleLogout }) => {
           </div>
         )}
 
-        {/* --- MOBILE HAMBURGER ICON --- */}
+        {/* --- 4. MOBILE HAMBURGER ICON (Right Anchored) --- */}
         {isMobile && (
           <button style={styles.hamburgerBtn} onClick={() => setIsMenuOpen(!isMenuOpen)}>
               {isMenuOpen ? <FaTimes /> : <FaBars />}
@@ -275,12 +264,11 @@ const Navbar = ({ user, cartCount, handleLogout }) => {
         )}
       </div>
 
-      {/* --- 4. MOBILE MENU (EXPANDS DOWN) --- */}
+      {/* --- MOBILE MENU FOLD DOWN --- */}
       {isMobile && (
         <div className={`mobile-menu ${isMenuOpen ? 'open' : ''}`} style={styles.mobileMenuWrapper}>
           <div style={styles.mobileMenuInner}>
             
-            {/* Mobile Search Bar (If Logged In) */}
             {user && (
               <div style={{ ...styles.searchWrapper, width: '100%', marginBottom: '20px' }}>
                 <input 
@@ -291,7 +279,6 @@ const Navbar = ({ user, cartCount, handleLogout }) => {
                   className="search-input"
                   style={{ ...styles.searchInput, width: '100%' }}
                 />
-                {/* Mobile Search Results */}
                 {searchTerm && searchResults.length > 0 && (
                   <div style={{...styles.searchResultsBox, position: 'relative', width: '100%', top: '5px', boxShadow: 'none', border: '1px solid #e2e8f0'}}>
                     {searchResults.map(product => {
@@ -308,7 +295,6 @@ const Navbar = ({ user, cartCount, handleLogout }) => {
               </div>
             )}
 
-            {/* Mobile Links */}
             <div style={styles.mobileLinksContainer}>
               {!user ? (
                 <>
@@ -357,8 +343,8 @@ const Navbar = ({ user, cartCount, handleLogout }) => {
   );
 };
 
-// --- DYNAMIC STYLES (PREMIUM GLASSMORPHISM THEME) ---
-const styles = {
+// 🔴 IRON-CLAD MOBILE STYLES
+const getStyles = (isMobile) => ({
   navbar: {
     fontFamily: "'Outfit', 'Segoe UI', sans-serif",
     position: 'sticky',
@@ -369,29 +355,65 @@ const styles = {
     WebkitBackdropFilter: 'blur(16px)',
     borderBottom: '1px solid rgba(0,0,0,0.05)',
     boxShadow: '0 4px 30px rgba(0, 0, 0, 0.05)',
-    width: '100%'
+    width: '100%',
+    boxSizing: 'border-box'
   },
   navInner: {
     display: 'flex',
+    flexDirection: 'row', // Force row layout
     justifyContent: 'space-between',
     alignItems: 'center',
-    padding: '15px 40px',
+    flexWrap: 'nowrap', // Forcibly prevent stacking
+    padding: isMobile ? '12px 20px' : '15px 40px',
     maxWidth: '1400px',
-    margin: '0 auto'
+    margin: '0 auto',
+    width: '100%',
+    boxSizing: 'border-box'
   },
   logoContainer: {
     display: 'flex',
+    flexDirection: 'row', // Force row layout
     alignItems: 'center',
-    gap: '12px',
-    textDecoration: 'none'
+    flexWrap: 'nowrap', // Forcibly prevent stacking
+    gap: '10px',
+    textDecoration: 'none',
+    flexShrink: 0 
+  },
+  logoImage: {
+    // Exact fixed dimensions. No global CSS can overwrite these now.
+    width: isMobile ? '40px' : '45px', 
+    height: isMobile ? '40px' : '45px',
+    minWidth: isMobile ? '40px' : '45px',
+    minHeight: isMobile ? '40px' : '45px',
+    maxWidth: isMobile ? '40px' : '45px',
+    maxHeight: isMobile ? '40px' : '45px',
+    objectFit: 'contain',
+    display: 'block',
+    flexShrink: 0 
   },
   brandName: {
     color: '#0f172a',
     margin: 0,
-    fontSize: '1.4rem',
+    fontSize: isMobile ? '1.2rem' : '1.4rem', 
     fontWeight: '800',
-    letterSpacing: '-0.5px'
+    letterSpacing: '-0.5px',
+    whiteSpace: 'nowrap', // Force text to stay on one line
+    flexShrink: 0
   },
+  hamburgerBtn: {
+    background: 'none',
+    border: 'none',
+    fontSize: '24px',
+    color: '#0f172a',
+    cursor: 'pointer',
+    padding: '5px',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    flexShrink: 0 // Anchors button to the right safely
+  },
+  
+  // Desktop specific styles
   centerContainer: {
     flex: 1,
     display: 'flex',
@@ -417,7 +439,8 @@ const styles = {
     border: '1px solid #cbd5e1',
     backgroundColor: '#f8fafc',
     fontSize: '0.95rem',
-    color: '#0f172a'
+    color: '#0f172a',
+    boxSizing: 'border-box'
   },
   searchBtn: {
     position: 'absolute',
@@ -484,7 +507,7 @@ const styles = {
     minWidth: '180px',
     padding: '10px 0',
     zIndex: 100,
-    marginTop: '15px' // Space from the text
+    marginTop: '15px' 
   },
   dropdownItem: {
     display: 'block',
@@ -546,21 +569,15 @@ const styles = {
     display: 'flex',
     alignItems: 'center'
   },
-  hamburgerBtn: {
-    background: 'none',
-    border: 'none',
-    fontSize: '24px',
-    color: '#0f172a',
-    cursor: 'pointer',
-    padding: '5px'
-  },
+  
+  // Mobile specific wrappers
   mobileMenuWrapper: {
     backgroundColor: 'rgba(255, 255, 255, 0.95)',
     backdropFilter: 'blur(16px)',
     borderTop: '1px solid #f1f5f9'
   },
   mobileMenuInner: {
-    padding: '20px 40px 40px 40px'
+    padding: '20px 20px 40px 20px'
   },
   mobileLinksContainer: {
     display: 'flex',
@@ -572,6 +589,6 @@ const styles = {
     padding: '10px 0',
     display: 'block'
   }
-};
+});
 
 export default Navbar;

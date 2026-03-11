@@ -1,11 +1,11 @@
-/* --- 1. Global Reset & Box Sizing (KEEP THIS) --- */
+/* --- 1. Global Reset & Box Sizing --- */
 *, *::before, *::after {
   box-sizing: border-box;
   margin: 0;
   padding: 0;
 }
 
-/* --- 2. Body Styles (UPDATED) --- */
+/* --- 2. Body Styles --- */
 body {
   margin: 0;
   padding: 0;
@@ -19,18 +19,12 @@ body {
   -moz-osx-font-smoothing: grayscale;
 }
 
-/* --- 3. HEAVY UI RESPONSIVE PATCH --- */
-
-/* This prevents the "White Space" on the right side of mobile screens */
 html, body {
   position: relative;
   max-width: 100%;
 }
 
-/* The Magic Clamp: 
-   This makes your H1 text scale perfectly between 2.5rem (mobile) 
-   and 6rem (desktop) without writing 100 media queries.
-*/
+/* --- 3. Fluid Typography --- */
 h1 {
   font-size: clamp(2.5rem, 8vw, 6rem);
   line-height: 0.9;
@@ -43,9 +37,14 @@ h2 {
   line-height: 1.1;
 }
 
+/* Basic safe image sizing (Removed the dangerous !important on height) */
+img {
+  max-width: 100%;
+  display: block;
+}
+
 /* --- 4. GLOBAL MOBILE OVERRIDES (Max-width 768px) --- */
 @media (max-width: 768px) {
-  
   /* Reduce padding so content doesn't feel squashed */
   section, .container {
     padding-left: 20px !important;
@@ -57,18 +56,10 @@ h2 {
     padding-top: 100px !important;
   }
 
-  /* Force all Side-by-Side grids to stack */
-  .grid-container, 
-  [style*="display: grid"], 
-  [style*="display: flex"] {
+  /* ✅ SAFE STACKING: Only stack things with the .mobile-stack class */
+  .grid-container, .mobile-stack {
     grid-template-columns: 1fr !important;
     flex-direction: column !important;
-  }
-
-  /* Shrink images that might be too tall for mobile viewports */
-  img {
-    max-width: 100%;
-    height: auto !important;
   }
 
   /* Hide specific GSAP elements if they cause layout shifts on small screens */
@@ -78,19 +69,15 @@ h2 {
 }
 
 /* --- 5. SMOOTH SCROLLING FIX --- */
-/* Ensures Lenis.js works better with the browser's native behavior */
 html.lenis {
   height: auto;
 }
-
 .lenis.lenis-smooth {
   scroll-behavior: auto;
 }
-
 .lenis.lenis-smooth [data-lenis-prevent] {
   overscroll-behavior: contain;
 }
-
 .lenis.lenis-stopped {
   overflow: hidden;
 }
