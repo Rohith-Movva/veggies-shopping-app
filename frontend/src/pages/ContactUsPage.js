@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
-import { FaArrowLeft, FaPaperPlane, FaCheckCircle, FaExclamationCircle, FaPhoneAlt, FaEnvelope, FaMapMarkerAlt } from 'react-icons/fa';
+import { FaPaperPlane, FaCheckCircle, FaExclamationCircle, FaPhoneAlt, FaEnvelope, FaMapMarkerAlt } from 'react-icons/fa';
 import API from '../api'; 
 
 const ContactUsPage = () => {
@@ -121,15 +120,6 @@ const ContactUsPage = () => {
           }
         `}
       </style>
-
-      {/* Header */}
-      <header style={styles.header}>
-        <Link to="/" style={styles.backLink}>
-          <FaArrowLeft style={{ marginRight: '8px' }} /> Back to Home
-        </Link>
-        <h1 style={styles.pageTitle}>Contact Us</h1>
-        <div style={{ width: '100px' }}></div> 
-      </header>
 
       {/* Main Content */}
       <div style={styles.contentWrapper}>
@@ -279,9 +269,6 @@ const ContactUsPage = () => {
 // Clean styling matching your brand
 const styles = {
   container: { fontFamily: "'Segoe UI', Tahoma, Geneva, Verdana, sans-serif", width: '100%', minHeight: '100vh', overflowX: 'clip' },
-  header: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '20px 40px', backgroundColor: 'rgba(255, 255, 255, 0.9)', backdropFilter: 'blur(10px)', boxShadow: '0 2px 10px rgba(0,0,0,0.05)', position: 'sticky', top: 0, zIndex: 1000 },
-  backLink: { display: 'flex', alignItems: 'center', textDecoration: 'none', color: '#2c3e50', fontWeight: '600', width: '120px', transition: 'color 0.2s' },
-  pageTitle: { color: '#2c3e50', margin: 0, fontSize: '24px', fontWeight: '800' },
   contentWrapper: { display: 'flex', justifyContent: 'center', padding: '60px 20px', minHeight: 'calc(100vh - 80px)' },
   
   // Left Column Styles
