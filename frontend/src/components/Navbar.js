@@ -10,7 +10,7 @@ import API from '../api';
 
 const Navbar = ({ user, cartCount, handleLogout }) => {
   // --- ORIGINAL STATE & LOGIC (UNTOUCHED) ---
-  const [showCategories, setShowCategories] = useState(false);
+  
   const [searchTerm, setSearchTerm] = useState('');
   const [allProducts, setAllProducts] = useState([]);
   const [searchResults, setSearchResults] = useState([]);

@@ -1,6 +1,6 @@
 import React, { useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
-import { FaUsers, FaTractor, FaHeart, FaCheckCircle, FaArrowRight } from 'react-icons/fa';
+import { FaUsers, FaTractor, FaHeart, FaCheckCircle } from 'react-icons/fa';
 import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/all';
 
