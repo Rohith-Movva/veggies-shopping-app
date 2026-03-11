@@ -5,7 +5,7 @@ import {
   FaChevronLeft, FaChevronRight 
 } from 'react-icons/fa';
 import gsap from 'gsap';
-import { ScrollTrigger } from 'gsap/ScrollTrigger';
+import { ScrollTrigger } from 'gsap/all';
 import farmBg1 from '../assets/farm-bg.png';
 import farmBg2 from '../assets/farm-bg-2.png'; 
 import farmBg3 from '../assets/farm-bg-3.png';
