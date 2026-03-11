@@ -1,13 +1,13 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { FaCheckCircle, FaLeaf, FaExclamationTriangle, FaIndustry, FaUtensils, FaInfoCircle, FaArrowLeft } from 'react-icons/fa';
+import { FaCheckCircle, FaLeaf, FaExclamationTriangle, FaIndustry, FaUtensils, FaInfoCircle } from 'react-icons/fa';
 import gsap from 'gsap';
 import API from '../api';
 
 const ProductDetails = ({ addToCart }) => {
   // --- ORIGINAL STATE & LOGIC (UNTOUCHED) ---
   const { id } = useParams();
-  const navigate = useNavigate();
+  const navigate = useNavigate(); // Kept because it's used for the Add to Cart redirect
   const [product, setProduct] = useState(null);
   const [quantity, setQuantity] = useState(1);
 
@@ -137,17 +137,8 @@ const ProductDetails = ({ addToCart }) => {
             transform: translateY(-3px);
             box-shadow: 0 15px 30px rgba(39, 174, 96, 0.4) !important;
           }
-
-          .back-btn:hover { color: #27ae60 !important; transform: translateX(-5px); }
         `}
       </style>
-
-      {/* Glassmorphism Header */}
-      <header style={styles.header}>
-        <button onClick={() => navigate(-1)} className="back-btn" style={styles.backBtn}>
-          <FaArrowLeft style={{ marginRight: '8px' }} /> Back
-        </button>
-      </header>
 
       <div style={styles.container}>
         
@@ -267,7 +258,7 @@ const ProductDetails = ({ addToCart }) => {
                 className="add-btn"
                 onClick={() => {
                   addToCart(product, quantity);
-                  navigate('/cart');
+                  navigate('/cart'); // User is redirected here without changing how your app works
                 }}
                 disabled={isOutOfStock}
                 style={{
@@ -295,30 +286,8 @@ const styles = {
     color: '#0f172a',
     overflowX: 'hidden'
   },
-  header: {
-    padding: '20px 50px',
-    backgroundColor: 'rgba(255, 255, 255, 0.7)',
-    backdropFilter: 'blur(16px)',
-    WebkitBackdropFilter: 'blur(16px)',
-    borderBottom: '1px solid rgba(0,0,0,0.03)',
-    position: 'sticky',
-    top: 0,
-    zIndex: 100
-  },
-  backBtn: {
-    background: 'none',
-    border: 'none',
-    display: 'inline-flex',
-    alignItems: 'center',
-    color: '#0f172a',
-    fontWeight: '800',
-    fontSize: '1.1rem',
-    cursor: 'pointer',
-    transition: 'all 0.3s ease',
-    padding: 0
-  },
   container: {
-    padding: '40px 40px 100px 40px',
+    padding: '60px 40px 100px 40px', // Added 20px extra top padding to account for the removed header
     maxWidth: '1300px',
     margin: '0 auto',
     display: 'flex',
@@ -510,7 +479,7 @@ const styles = {
     gap: '20px',
     paddingTop: '30px',
     borderTop: '1px solid rgba(0,0,0,0.05)',
-    alignItems: 'stretch', // ensures buttons are same height
+    alignItems: 'stretch', 
     flexWrap: 'wrap'
   },
   quantityWrapper: {
