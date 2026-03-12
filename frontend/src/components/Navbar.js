@@ -140,7 +140,6 @@ const Navbar = ({ user, cartCount, handleLogout }) => {
             opacity: 1;
           }
           
-          /* Ensures text hides gracefully on narrow phones so the logo and hamburger don't collide */
           @media (max-width: 400px) {
             .brand-text { font-size: 1rem !important; }
           }
@@ -150,7 +149,7 @@ const Navbar = ({ user, cartCount, handleLogout }) => {
       {/* --- TOP BAR (Logo Left, Menu/Links Right) --- */}
       <div style={styles.navInner}>
         
-        {/* 1. LOGO CONTAINER (Left Anchored & Locked) */}
+        {/* 1. LOGO CONTAINER */}
         <Link 
           to={user ? "/shop" : "/"} 
           onClick={handleLinkClick} 
@@ -164,7 +163,7 @@ const Navbar = ({ user, cartCount, handleLogout }) => {
           <span className="brand-text" style={styles.brandName}>Agro Tech Harvest</span>
         </Link>
 
-        {/* 2. DESKTOP CENTER (Search or Links) */}
+        {/* 2. DESKTOP CENTER */}
         {!isMobile && (
           <div style={styles.centerContainer}>
             {user ? (
@@ -199,6 +198,7 @@ const Navbar = ({ user, cartCount, handleLogout }) => {
               <div style={styles.desktopLinks}>
                 <Link to="/" className="nav-link">Home</Link>
                 <Link to="/about" className="nav-link">About Us</Link>
+                <Link to="/blog" className="nav-link">Blog</Link>
                 <Link to="/all-products" className="nav-link">Shop</Link>
                 <Link to="/contact" className="nav-link">Contact Us</Link>
               </div>
@@ -206,7 +206,7 @@ const Navbar = ({ user, cartCount, handleLogout }) => {
           </div>
         )}
 
-        {/* 3. DESKTOP RIGHT (Actions) */}
+        {/* 3. DESKTOP RIGHT */}
         {!isMobile && (
           <div style={styles.rightContainer}>
             {!user ? (
@@ -226,6 +226,7 @@ const Navbar = ({ user, cartCount, handleLogout }) => {
                   </div>
                 </div>
 
+                {/* 🔴 ADMIN DROPDOWN (Updated with Blogs) */}
                 {user.isAdmin && (
                   <div className="dropdown-container" style={styles.dropdownContainer}>
                     <span className="nav-link" style={{ display: 'flex', alignItems: 'center', gap: '5px', cursor: 'pointer', color: '#dc2626' }}>
@@ -235,6 +236,7 @@ const Navbar = ({ user, cartCount, handleLogout }) => {
                       <Link to="/admin" className="dropdown-item" style={styles.dropdownItem} onClick={handleLinkClick}>Dashboard</Link>
                       <Link to="/admin/inventory" className="dropdown-item" style={styles.dropdownItem} onClick={handleLinkClick}>Inventory</Link>
                       <Link to="/admin/contacts" className="dropdown-item" style={styles.dropdownItem} onClick={handleLinkClick}>Contact Us</Link>
+                      <Link to="/admin/blogs" className="dropdown-item" style={styles.dropdownItem} onClick={handleLinkClick}>Blogs</Link>
                     </div>
                   </div>
                 )}
@@ -256,7 +258,7 @@ const Navbar = ({ user, cartCount, handleLogout }) => {
           </div>
         )}
 
-        {/* --- 4. MOBILE HAMBURGER ICON (Right Anchored) --- */}
+        {/* 4. MOBILE HAMBURGER ICON */}
         {isMobile && (
           <button style={styles.hamburgerBtn} onClick={() => setIsMenuOpen(!isMenuOpen)}>
               {isMenuOpen ? <FaTimes /> : <FaBars />}
@@ -300,6 +302,7 @@ const Navbar = ({ user, cartCount, handleLogout }) => {
                 <>
                   <Link to="/" className="nav-link" onClick={handleLinkClick} style={styles.mobileLink}>Home</Link>
                   <Link to="/about" className="nav-link" onClick={handleLinkClick} style={styles.mobileLink}>About Us</Link>
+                  <Link to="/blog" className="nav-link" onClick={handleLinkClick} style={styles.mobileLink}>Blog</Link>
                   <Link to="/all-products" className="nav-link" onClick={handleLinkClick} style={styles.mobileLink}>Shop</Link>
                   <Link to="/contact" className="nav-link" onClick={handleLinkClick} style={styles.mobileLink}>Contact Us</Link>
                   <div style={{ height: '1px', background: '#e2e8f0', margin: '15px 0' }}></div>
@@ -312,12 +315,15 @@ const Navbar = ({ user, cartCount, handleLogout }) => {
                   <Link to="/category/vegetables" className="nav-link" onClick={handleLinkClick} style={styles.mobileLink}>Vegetables</Link>
                   <Link to="/category/powders" className="nav-link" onClick={handleLinkClick} style={styles.mobileLink}>Raw Powders</Link>
                   
+                  {/* 🔴 ADMIN MOBILE SECTION (Updated with Blogs) */}
                   {user.isAdmin && (
                     <>
                       <div style={{ height: '1px', background: '#e2e8f0', margin: '10px 0' }}></div>
                       <span style={{ color: '#dc2626', fontWeight: '800', padding: '10px 0', display: 'block' }}><FaLock/> Admin Panel</span>
                       <Link to="/admin" className="nav-link" onClick={handleLinkClick} style={styles.mobileLink}>Dashboard</Link>
                       <Link to="/admin/inventory" className="nav-link" onClick={handleLinkClick} style={styles.mobileLink}>Inventory</Link>
+                      <Link to="/admin/contacts" className="nav-link" onClick={handleLinkClick} style={styles.mobileLink}>Contact Us</Link>
+                      <Link to="/admin/blogs" className="nav-link" onClick={handleLinkClick} style={styles.mobileLink}>Blogs</Link>
                     </>
                   )}
 
@@ -343,7 +349,7 @@ const Navbar = ({ user, cartCount, handleLogout }) => {
   );
 };
 
-// 🔴 IRON-CLAD MOBILE STYLES
+// --- STYLES ---
 const getStyles = (isMobile) => ({
   navbar: {
     fontFamily: "'Outfit', 'Segoe UI', sans-serif",
@@ -360,10 +366,10 @@ const getStyles = (isMobile) => ({
   },
   navInner: {
     display: 'flex',
-    flexDirection: 'row', // Force row layout
+    flexDirection: 'row', 
     justifyContent: 'space-between',
     alignItems: 'center',
-    flexWrap: 'nowrap', // Forcibly prevent stacking
+    flexWrap: 'nowrap', 
     padding: isMobile ? '12px 20px' : '15px 40px',
     maxWidth: '1400px',
     margin: '0 auto',
@@ -372,15 +378,14 @@ const getStyles = (isMobile) => ({
   },
   logoContainer: {
     display: 'flex',
-    flexDirection: 'row', // Force row layout
+    flexDirection: 'row', 
     alignItems: 'center',
-    flexWrap: 'nowrap', // Forcibly prevent stacking
+    flexWrap: 'nowrap', 
     gap: '10px',
     textDecoration: 'none',
     flexShrink: 0 
   },
   logoImage: {
-    // Exact fixed dimensions. No global CSS can overwrite these now.
     width: isMobile ? '40px' : '45px', 
     height: isMobile ? '40px' : '45px',
     minWidth: isMobile ? '40px' : '45px',
@@ -397,7 +402,7 @@ const getStyles = (isMobile) => ({
     fontSize: isMobile ? '1.2rem' : '1.4rem', 
     fontWeight: '800',
     letterSpacing: '-0.5px',
-    whiteSpace: 'nowrap', // Force text to stay on one line
+    whiteSpace: 'nowrap', 
     flexShrink: 0
   },
   hamburgerBtn: {
@@ -410,10 +415,8 @@ const getStyles = (isMobile) => ({
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
-    flexShrink: 0 // Anchors button to the right safely
+    flexShrink: 0 
   },
-  
-  // Desktop specific styles
   centerContainer: {
     flex: 1,
     display: 'flex',
@@ -569,8 +572,6 @@ const getStyles = (isMobile) => ({
     display: 'flex',
     alignItems: 'center'
   },
-  
-  // Mobile specific wrappers
   mobileMenuWrapper: {
     backgroundColor: 'rgba(255, 255, 255, 0.95)',
     backdropFilter: 'blur(16px)',

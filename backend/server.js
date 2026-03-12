@@ -8,6 +8,7 @@ const productRoutes = require('./routes/productRoutes');
 const orderRoutes = require('./routes/orderRoutes');
 const authRoutes = require('./routes/authRoutes');
 const contactUs = require('./routes/contactUs');
+const blogRoutes = require('./routes/blogRoutes');
 
 // Initialize the App
 const app = express();
@@ -31,6 +32,7 @@ app.use('/api/products', productRoutes);
 app.use('/api/orders', orderRoutes);
 app.use('/api/auth', authRoutes);
 app.use('/api/contact', contactUs);
+app.use('/api/blogs', blogRoutes);
 
 // Serve Images (Clean and simple now)
 app.use('/images', express.static(path.join(__dirname, 'uploads')));

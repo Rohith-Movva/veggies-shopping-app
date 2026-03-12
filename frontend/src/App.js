@@ -21,6 +21,9 @@ import AboutUsPage from './pages/AboutUsPage';
 import AllProductsPage from './pages/AllProductsPage';
 import ContactUsPage from './pages/ContactUsPage';
 import AdminContactsPage from './pages/AdminContactsPage';
+import AdminBlogPage from './pages/AdminBlogPage';
+import BlogPage from './pages/BlogPage';
+import BlogDetailsPage from './pages/BlogDetailsPage';
 
 function AppContent() {
   const [user, setUser] = useState(null);
@@ -119,11 +122,14 @@ function AppContent() {
           
           <Route path="/cart" element={user ? <CartPage user={user} cart={cart} setCart={setCart} removeFromCart={removeFromCart} updateQuantity={updateQuantity} /> : <Navigate to="/login" />} />
           <Route path="/profile" element={user ? <ProfilePage user={user} /> : <Navigate to="/login" />} />
+          <Route path="/blog" element={<BlogPage />} />
+          <Route path="/blog/:id" element={<BlogDetailsPage />} />
           
           {/* Admin Routes */}
           <Route path="/admin" element={user && user.isAdmin ? <AdminPage /> : <Navigate to="/" /> } />
           <Route path="/admin/inventory" element={user && user.isAdmin ? <InventoryPage /> : <Navigate to="/" />} />
           <Route path="/admin/contacts" element={user && user.isAdmin ? <AdminContactsPage /> : <Navigate to="/" />} />
+          <Route path="/admin/blogs" element={user && user.isAdmin ? <AdminBlogPage /> : <Navigate to="/" />} />
 
         </Routes>
       </div>

@@ -81,6 +81,8 @@ const Footer = () => {
           <h3 style={styles.sectionTitle}>Quick Links</h3>
           <ul style={styles.linkList}>
             <li style={styles.listItem}><Link to="/" className="footer-link">Home</Link></li>
+            <li style={styles.listItem}><Link to="/about" className="footer-link">About Us</Link></li>
+            <li style={styles.listItem}><Link to="/blog" className="footer-link">Blog</Link></li>
             <li style={styles.listItem}><Link to="/category/vegetables" className="footer-link">Vegetables</Link></li>
             <li style={styles.listItem}><Link to="/category/powders" className="footer-link">Raw Powders</Link></li>
             <li style={styles.listItem}><Link to="/cart" className="footer-link">My Cart</Link></li>
